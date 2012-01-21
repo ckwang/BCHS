@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import util.GenericAI;
+import util.GenericBot;
 
 /**
  * Simple example pokerbot, in java. This is an example of a bare bones,
@@ -42,7 +42,7 @@ public class Player {
         }
         
         String input;
-        GenericAI ai = new GenericAI();
+        GenericBot ai = new GenericBot();
         while (true) {
             try {
                 // block until engine sends us a packet, then read it into input

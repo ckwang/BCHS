@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import util.GenericBot;
+
 /**
  * Simple example pokerbot, in java. This is an example of a bare bones,
  * dumb pokerbot - it only sets up the socket necessary to connect with the 
@@ -40,6 +42,8 @@ public class Player {
         }
         
         String input;
+        String output;
+        GenericBot bot = new AlwaysCallBot();
         while (true) {
             try {
                 // block until engine sends us a packet, then read it into input
@@ -55,13 +59,15 @@ public class Player {
             }
             // Here is where you should implement code to parse the packets from
             // the engine and act on it.
-            System.out.println(input);
+//            System.out.println(input);
+						output = bot.parse(input);
             if (input.split(" ")[0].compareToIgnoreCase("GETACTION") == 0) {
                 // When appropriate, reply to the engine with a legal action.
                 // The engine will ignore all spurious packets you send.
                 // The engine will also check/fold for you if you return an
                 // illegal action.
-                outStream.println("CHECK");
+                outStream.println(output);
+//                outStream.println("CHECK");
             }
         }
         
