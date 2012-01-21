@@ -1,13 +1,15 @@
-package pokerbot.util;
+import java.util.Arrays;
 
-class Hand {
-	public boolean complete = false;
+public class Hand {
+
+	public enum Category { Nothing, Pair, TwoPair, Triplets, Straight, Flush, FullHouse, Quads, StraightFlush }
+
 	public boolean straight = false;
 	public boolean flush = false;
 	public int num = 0;
+	public int highest;
 	public Category best = Category.Nothing;
-	public Rank highest;
-	public Card[] private;
+	public Card[] hole = new Card[2];
 	public Card[] community = new Card[5];
 	public int[] suits = {0, 0, 0, 0};
 	public int[] ranks = new int[13];
@@ -15,24 +17,25 @@ class Hand {
 	public Hand() {}
 
 	public Hand(Card c1, Card c2) {
-		private = {c1, c2};
-		Array.fill(ranks, 0);
+		hole[0] = c1;
+		hole[1] = c2;
+		Arrays.fill(ranks, 0);
 		if (c1.r == c2.r)
 			best = Category.Pair;
 		highest = c1.r;
 		if (c2.r > highest)
 			highest = c2.r;
-		ranks[c1.r.ordinal] += 1;
-		ranks[c2.r.ordinal] += 1;
-		suits[c1.s.ordinal] += 1;
-		suits[c2.s.ordinal] += 1;
+		ranks[c1.r] += 1;
+		ranks[c2.r] += 1;
+		suits[c1.s] += 1;
+		suits[c2.s] += 1;
 	}
 
-	public addCommunity(int i, Card c) {
+	public void addCards(int i, Card c) {
 		assert i >= 0 && i < 5;
 		community[i] = c;
-		ranks[c.r.ordinal] += 1;
-		suits[c.s.ordinal] += 1;
+		ranks[c.r] += 1;
+		suits[c.s - 2] += 1;
 	}
 
 	public void analyzeHand() {

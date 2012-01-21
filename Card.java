@@ -1,5 +1,3 @@
-package pokerbots.util;
-
 public class Card {
 
 	public enum Suit { Spade, Heart, Club, Diamond };
