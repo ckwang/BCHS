@@ -9,6 +9,60 @@ public class Card {
 		this.r = r;
 	}
 	
+	public Card(String input) {
+		switch (input.charAt(0)) {
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			r = input.charAt(0) - '0';
+			break;
+		case 'T':
+			r = 10;
+			break;
+		case 'J':
+			r = 11;
+			break;
+		case 'Q':
+			r = 12;
+			break;
+		case 'K':
+			r = 13;
+			break;
+		case 'A':
+			r = 14;
+			break;
+		default:
+			System.out.println("Hole card rank parse error.");
+			r = -1;
+		}
+		switch (input.charAt(1)) {
+			case 's':
+				s = 0;
+				break;
+			case 'h':
+				s = 1;
+				break;
+			case 'c':
+				s = 2;
+				break;
+			case 'd':
+				s = 3;
+				break;
+			default:
+				System.out.println("Hole card suit parse error.");
+				s = -1;
+		}
+	}
+	
+	public int toValue() {
+		return (r-2)*4 + s;
+	}
+	
 	@Override
 	public String toString() {
 		String result = "";
