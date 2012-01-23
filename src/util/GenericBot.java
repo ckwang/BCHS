@@ -15,11 +15,10 @@ public class GenericBot {
 	// hand information
 	public int handId;
 	public int position;
-	public Card holeCard1;
-	public Card holeCard2;
 	public int myBank;
 	public int leftBank;
 	public int rightBank;
+	public Hand myHand;
 
 	// current information
 	public int potSize;
@@ -27,8 +26,8 @@ public class GenericBot {
 	public int leftStack;
 	public int rightStack;
 	public double timeBank;
-	public List<Card> communityCards;
-	public List<Action> lastActions;
+	public Action leftAction;
+	public Action rightAction;
 	public List<Action> legalActions;
 
 	public String parse(String input) {
@@ -44,36 +43,41 @@ public class GenericBot {
 			bb = Integer.parseInt(tokens[6]);
 			sb = Integer.parseInt(tokens[7]);
 			timeBank = Double.parseDouble(tokens[8]);
-
 			myStack = leftStack = rightStack = stackSize;
 		} else if (tokens[0].compareToIgnoreCase("NEWHAND") == 0) {
 			handId = Integer.parseInt(tokens[1]);
 			position = Integer.parseInt(tokens[2]);
-			holeCard1 = parseCard(tokens[3]);
-			holeCard2 = parseCard(tokens[4]);
+			myHand = new Hand(parseCard(tokens[3]), parseCard(tokens[4]));
 			myBank = Integer.parseInt(tokens[5]);
 			leftBank = Integer.parseInt(tokens[6]);
 			rightBank = Integer.parseInt(tokens[7]);
 			timeBank = Double.parseDouble(tokens[8]);
+			System.out.println("Hole Cards: " + myHand.hole[0] + ", " + myHand.hole[1]);
 		} else if (tokens[0].compareToIgnoreCase("GETACTION") == 0) {
 			potSize = Integer.parseInt(tokens[1]);
-			communityCards = new ArrayList<Card>();
-			lastActions = new ArrayList<Action>();
 			legalActions = new ArrayList<Action>();
-
 			int numBoardCards = Integer.parseInt(tokens[2]);
 			if (numBoardCards > 0) {
 				String[] boardCardsTokens = tokens[3].split(",");
-				for (int i = 0; i < numBoardCards; i++) {
-					communityCards.add(parseCard(boardCardsTokens[i]));
+				for (int i = myHand.community.size(); i < numBoardCards; i++) {
+					myHand.addCards(parseCard(boardCardsTokens[i]));
 				}
 			}
-
 			int numLastActions = Integer.parseInt(tokens[3 + (numBoardCards > 0 ? 1 : 0)]);
 			if (numLastActions > 0) {
 				String[] lastActionsTokens = tokens[4 + (numBoardCards > 0 ? 1 : 0)].split(",");
+				Action a = null;
+				leftAction = null;
+				rightAction = null;
 				for (int i = 0; i < numLastActions; i++) {
-					lastActions.add(parsePerformedAction(lastActionsTokens[i]));
+					a = parsePerformedAction(lastActionsTokens[i]);
+					assert a != null;
+					if (a == null || a.actor == null)
+						continue;
+					if (a.actor.compareToIgnoreCase(leftName) == 0)
+						leftAction = a;
+					else if (a.actor.compareToIgnoreCase(rightName) == 0)
+						rightAction = a;
 				}
 			}
 
@@ -88,17 +92,18 @@ public class GenericBot {
 					(numLastActions > 0 ? 1 : 0) +
 					(numLegalActions > 0 ? 1 : 0)]);
 
-			System.out.println("*" + lastActions.toString());
+			if (leftAction != null)
+				System.out.println("* left action: " + leftAction);
+			if (rightAction != null)
+				System.out.println("* right action: " + rightAction);
 			System.out.println("*" + legalActions.toString());
-			System.out.println("*" + holeCard1 + ", " + holeCard2);
-			response = decide();
+			response = decide(); //compute next action
 		} else if (tokens[0].compareToIgnoreCase("HANDOVER") == 0) {
-
+			// do nothing
 		} else {
 			System.out.println("Packet type parse error.");
 			return null;
 		}
-
 		return response;
 	}
 
@@ -221,6 +226,28 @@ public class GenericBot {
 	}
 
 	protected String decide() {
-		return "CHECK";
+		String decision = "CHECK";
+		switch (myHand.community.size()) {
+			case 0:
+				decision = preflop_computation();
+				break;
+			case 3:
+				decision = flop_computation();
+				break;
+			case 4:
+				decision = turn_computation();
+				break;
+			case 5:
+				decision = river_computation();
+				break;
+			default:
+				System.out.print("Decide: invalid number of community cards");
+		}
+		return decision;
 	}
+
+	protected String preflop_computation() { return "CHECK"; }
+	protected String flop_computation() { return "CHECK"; }
+	protected String turn_computation() { return "CHECK"; }
+	protected String river_computation() { return "CHECK"; }
 }

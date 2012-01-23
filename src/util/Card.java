@@ -66,7 +66,6 @@ public class Card {
 	@Override
 	public String toString() {
 		String result = "";
-		
 		switch (r) {
 		case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
 			result += r;
@@ -87,7 +86,6 @@ public class Card {
 			result += "A";
 			break;
 		}
-		
 		switch (s) {
 		case 0:
 			result += "s";
@@ -102,7 +100,6 @@ public class Card {
 			result += "d";
 			break;
 		}
-		
 		return result;
 	}
 }
