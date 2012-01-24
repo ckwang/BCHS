@@ -3,7 +3,7 @@ package util;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenericBot {
+public abstract class GenericBot {
 	// game information
 	public int numHands;
 	public int stackSize;
@@ -32,7 +32,6 @@ public class GenericBot {
 
 	public String parse(String input) {
 		String response = null;
-
 		// Parsing the input files
 		String[] tokens = input.split(" ");
 		if (tokens[0].compareToIgnoreCase("NEWGAME") == 0) {
@@ -45,9 +44,9 @@ public class GenericBot {
 			timeBank = Double.parseDouble(tokens[8]);
 			myStack = leftStack = rightStack = stackSize;
 		} else if (tokens[0].compareToIgnoreCase("NEWHAND") == 0) {
+			System.out.println("\nHand " + tokens[1]);
 			handId = Integer.parseInt(tokens[1]);
 			position = Integer.parseInt(tokens[2]);
-//			myHand = new Hand(parseCard(tokens[3]), parseCard(tokens[4]));
 			myHand = new Hand(new Card(tokens[3]), new Card(tokens[4]));
 			myBank = Integer.parseInt(tokens[5]);
 			leftBank = Integer.parseInt(tokens[6]);
@@ -94,10 +93,10 @@ public class GenericBot {
 					(numLegalActions > 0 ? 1 : 0)]);
 
 			if (leftAction != null)
-				System.out.println("* left action: " + leftAction);
+				System.out.println("Left action: " + leftAction);
 			if (rightAction != null)
-				System.out.println("* right action: " + rightAction);
-			System.out.println("*" + legalActions.toString());
+				System.out.println("Right action: " + rightAction);
+//			System.out.println("Legal action:" + legalActions.toString());
 			response = decide(); //compute next action
 		} else if (tokens[0].compareToIgnoreCase("HANDOVER") == 0) {
 			// do nothing
@@ -195,8 +194,8 @@ public class GenericBot {
 		return decision;
 	}
 
-	protected String preflop_computation() { return "CHECK"; }
-	protected String flop_computation() { return "CHECK"; }
-	protected String turn_computation() { return "CHECK"; }
-	protected String river_computation() { return "CHECK"; }
+	protected abstract String preflop_computation();
+	protected abstract String flop_computation();
+	protected abstract String turn_computation();
+	protected abstract String river_computation();
 }

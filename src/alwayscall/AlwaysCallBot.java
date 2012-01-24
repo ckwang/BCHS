@@ -3,19 +3,20 @@ package alwayscall;
 import util.*;
 
 public class AlwaysCallBot extends GenericBot {
-
-	@Override
-	public String decide() {
-		for (Action a: legalActions) {
-			switch (a.type) {
-				case CHECK:
-					return "CHECK";
-				case CALL:
-					return "CALL";
-				default:
-			}
-		}
-		return "FOLD";
+	
+	public String preflop_computation() {
+		return "CHECK";
 	}
 
+	public String flop_computation() {
+		return "CHECK";
+	}
+
+	public String turn_computation() {
+		return "CHECK";
+	}
+
+	public String river_computation() {
+		return "CHECK";
+	}
 }

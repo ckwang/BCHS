@@ -35,6 +35,7 @@ public class Action {
 	
 	@Override
 	public String toString() {
-		return type + (actor != null ? (":" + actor) : "") + (amount != -1 ? (":" + amount) : "");
+//		return type + (actor != null ? (":" + actor) : "") + (amount != -1 ? (":" + amount) : "");
+		return type + " " + (amount != -1 ? amount : "");
 	}
 }
