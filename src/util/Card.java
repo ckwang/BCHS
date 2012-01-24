@@ -11,30 +11,23 @@ public class Card {
 	
 	public Card(String input) {
 		switch (input.charAt(0)) {
-		case '2':
-		case '3':
-		case '4':
-		case '5':
-		case '6':
-		case '7':
-		case '8':
-		case '9':
-			r = input.charAt(0) - '0';
+		case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
+			r = input.charAt(0) - '2';
 			break;
 		case 'T':
-			r = 10;
+			r = 8;
 			break;
 		case 'J':
-			r = 11;
+			r = 9;
 			break;
 		case 'Q':
-			r = 12;
+			r = 10;
 			break;
 		case 'K':
-			r = 13;
+			r = 11;
 			break;
 		case 'A':
-			r = 14;
+			r = 12;
 			break;
 		default:
 			System.out.println("Hole card rank parse error.");
@@ -60,7 +53,7 @@ public class Card {
 	}
 	
 	public int toValue() {
-		return (r-2)*4 + s;
+		return r*4 + s;
 	}
 	
 	@Override
@@ -68,7 +61,7 @@ public class Card {
 		String result = "";
 		switch (r) {
 		case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
-			result += r;
+			result += r + 2;
 			break;
 		case 10:
 			result += "T";

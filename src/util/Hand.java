@@ -30,16 +30,16 @@ public class Hand {
 			pairRank1 = c1.r;
 		}
 		community = new ArrayList<Card>();
-		ranks[c1.r-2] += 1;
-		ranks[c2.r-2] += 1;
+		ranks[c1.r] += 1;
+		ranks[c2.r] += 1;
 		suits[c1.s] += 1;
 		suits[c2.s] += 1;
 	}
 
 	public void addCards(Card c) {
 		community.add(c);
-		assert c.r >= 0 && c.r <= 14;
-		ranks[c.r-2] += 1;
+		assert c.r >= 0 && c.r <= 12;
+		ranks[c.r] += 1;
 		suits[c.s] += 1;
 	}
 

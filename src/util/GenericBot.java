@@ -47,7 +47,8 @@ public class GenericBot {
 		} else if (tokens[0].compareToIgnoreCase("NEWHAND") == 0) {
 			handId = Integer.parseInt(tokens[1]);
 			position = Integer.parseInt(tokens[2]);
-			myHand = new Hand(parseCard(tokens[3]), parseCard(tokens[4]));
+//			myHand = new Hand(parseCard(tokens[3]), parseCard(tokens[4]));
+			myHand = new Hand(new Card(tokens[3]), new Card(tokens[4]));
 			myBank = Integer.parseInt(tokens[5]);
 			leftBank = Integer.parseInt(tokens[6]);
 			rightBank = Integer.parseInt(tokens[7]);
@@ -60,7 +61,7 @@ public class GenericBot {
 			if (numBoardCards > 0) {
 				String[] boardCardsTokens = tokens[3].split(",");
 				for (int i = myHand.community.size(); i < numBoardCards; i++) {
-					myHand.addCards(parseCard(boardCardsTokens[i]));
+					myHand.addCards(new Card(boardCardsTokens[i]));
 				}
 			}
 			int numLastActions = Integer.parseInt(tokens[3 + (numBoardCards > 0 ? 1 : 0)]);
@@ -105,58 +106,6 @@ public class GenericBot {
 			return null;
 		}
 		return response;
-	}
-
-	private Card parseCard(String input) {
-		int rank, suit;
-		switch (input.charAt(0)) {
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				rank = input.charAt(0) - '0';
-				break;
-			case 'T':
-				rank = 10;
-				break;
-			case 'J':
-				rank = 11;
-				break;
-			case 'Q':
-				rank = 12;
-				break;
-			case 'K':
-				rank = 13;
-				break;
-			case 'A':
-				rank = 14;
-				break;
-			default:
-				System.out.println("Hole card rank parse error.");
-				return null;
-		}
-		switch (input.charAt(1)) {
-			case 's':
-				suit = 0;
-				break;
-			case 'h':
-				suit = 1;
-				break;
-			case 'c':
-				suit = 2;
-				break;
-			case 'd':
-				suit = 3;
-				break;
-			default:
-				System.out.println("Hole card suit parse error.");
-				return null;
-		}
-		return new Card(suit, rank);
 	}
 
 	private Action parsePerformedAction(String input) {
