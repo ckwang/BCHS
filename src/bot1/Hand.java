@@ -30,16 +30,16 @@ public class Hand {
 		
 		hash = cards[0].hash*52+cards[1].hash;
 		
-		suits[cards[0].s.ordinal()]++;
-		suits[cards[1].s.ordinal()]++;
-		ranks[cards[0].s.ordinal()]++;
-		ranks[cards[1].s.ordinal()]++;
+		suits[cards[0].s]++;
+		suits[cards[1].s]++;
+		ranks[cards[0].s]++;
+		ranks[cards[1].s]++;
 		used.add(c1.hash);
 		used.add(c2.hash);
 		
 		if(c1.s==c2.s) {
 			best = Category.Pair;
-			dups[0] = c1.r.ordinal();
+			dups[0] = c1.r;
 		}
 		calcValue();
 	}
@@ -48,8 +48,8 @@ public class Hand {
 		value = best.ordinal()*13*13*13*13 + 
 				dups[0]*13*13*13 +
 				dups[1]*13*13 +
-				cards[0].r.ordinal()*13 +
-				cards[1].r.ordinal();
+				cards[0].r*13 +
+				cards[1].r;
 		return;
 	}
 	
@@ -87,11 +87,16 @@ public class Hand {
 		for(int i=0;i<4;i++){
 			if(ranks[i]>0)cnt++;
 		}
+		if(ranks[12]>0&&cnt==4){
+			straight = true;
+			dups[0]=0;
+			dups[1]=0;
+		}
 		for(int i=0;i<13-4;i++){
 			if(ranks[i+4]>0)cnt++;
 			if(cnt==5){
 				straight = true;
-				dups[0]=i;
+				dups[0]=i+1;
 				dups[1]=0;
 			}
 			if(ranks[i]>0)cnt--;
@@ -139,14 +144,14 @@ public class Hand {
 	public void addCard(Card c){
 		cards[num]=c;
 		num++;
-		suits[c.s.ordinal()]++;
-		ranks[c.r.ordinal()]++;
+		suits[c.s]++;
+		ranks[c.r]++;
 		used.add(c.hash);
 	}
 	
 	public int evalWithCard(Card c){
-		suits[c.s.ordinal()]++;
-		ranks[c.r.ordinal()]++;
+		suits[c.s]++;
+		ranks[c.r]++;
 		
 		int lvalue = value;
 		Category lbest = best;
@@ -160,8 +165,8 @@ public class Hand {
 		dups[0]=ldups[0];
 		dups[1]=ldups[1];
 		
-		suits[c.s.ordinal()]--;
-		ranks[c.r.ordinal()]--;
+		suits[c.s]--;
+		ranks[c.r]--;
 		return ret;
 	}
 }

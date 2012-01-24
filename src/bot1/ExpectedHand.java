@@ -45,12 +45,60 @@ public class ExpectedHand {
 			prob.put(i,Double.valueOf(prob.get(i)/sum));
 		}
 	}
+	public static long totalTime = 0; 
 	public double compare(Hand h){
-		double result = 0.0;
+		double result = 0.0, aggr = 0.0;
+		h.calcConfig();
+		h.calcValue();
+		
 		for(Integer i:hands.keySet()){
-			if(h.used.contains(i))continue;
+			
+			if(h.used.contains(i/52))continue;
+			if(h.used.contains(i%52))continue;
+			
+			int total=0,win=0,loss=0;
+			Hand opp = hands.get(i);
+			totalTime-=System.nanoTime();
+			
+			opp.calcConfig();
+			opp.calcValue();
+			for(Integer j=51;j>=0;j--){
+				if(i%52==j)continue;
+				if(i/52==j)continue;
+				if(h.used.contains(j))continue;
+				total++;
+				int v1=h.evalWithCard(new Card(j)),v2=opp.evalWithCard(new Card(j));
+				if(v1>v2)win++;
+				if(v2>v1)loss++;
+			}
+			totalTime+=System.nanoTime();
+			
+			aggr+=prob.get(i);
+			double w=(1-(double)loss/total)*(1-(double)loss/total),
+				   l=(1-(double)win/total)*(1-(double)win/total);
+			if(h.value>opp.value){
+				result+=w*prob.get(i);
+			}else if(h.value<opp.value){
+				result+=(1-l)*prob.get(i);
+			}else{
+				result+=(w+1-l)/2*prob.get(i);
+			}
 			
 		}
-		return 0.0;
+		
+		return result/aggr;
+	}
+	public static void main(String[] args){
+		Hand h1 = new Hand(new Card(0),new Card(1));
+		
+		long start = System.nanoTime();
+		for(int i=0;i<100;i++){
+			ExpectedHand eh = new ExpectedHand();
+			eh.compare(h1);
+		}
+		long end = System.nanoTime();
+		System.out.println((end-start)/1000000.0/100);
+		System.out.println((totalTime/1000000.0)/100);
+		
 	}
 }
