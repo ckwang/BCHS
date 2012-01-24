@@ -9,8 +9,8 @@ public abstract class GenericBot {
 	public int stackSize;
 	public int bb;
 	public int sb;
-	public String leftName;
-	public String rightName;
+	public String leftName = null;
+	public String rightName = null;
 
 	// hand information
 	public int handId;
@@ -28,7 +28,11 @@ public abstract class GenericBot {
 	public double timeBank;
 	public Action leftAction;
 	public Action rightAction;
-	public List<Action> legalActions;
+	public List<Action> legalActions = new ArrayList<Action>();
+	public boolean toCheck;
+	public int toBet;
+	public int toCall;
+	public int toCaise;
 
 	public String parse(String input) {
 		String response = null;
@@ -55,7 +59,7 @@ public abstract class GenericBot {
 			System.out.println("Hole Cards: " + myHand.hole[0] + ", " + myHand.hole[1]);
 		} else if (tokens[0].compareToIgnoreCase("GETACTION") == 0) {
 			potSize = Integer.parseInt(tokens[1]);
-			legalActions = new ArrayList<Action>();
+			legalActions.clear();
 			int numBoardCards = Integer.parseInt(tokens[2]);
 			if (numBoardCards > 0) {
 				String[] boardCardsTokens = tokens[3].split(",");
@@ -66,18 +70,24 @@ public abstract class GenericBot {
 			int numLastActions = Integer.parseInt(tokens[3 + (numBoardCards > 0 ? 1 : 0)]);
 			if (numLastActions > 0) {
 				String[] lastActionsTokens = tokens[4 + (numBoardCards > 0 ? 1 : 0)].split(",");
-				Action a = null;
+				Action a;
 				leftAction = null;
 				rightAction = null;
 				for (int i = 0; i < numLastActions; i++) {
 					a = parsePerformedAction(lastActionsTokens[i]);
 					assert a != null;
-					if (a == null || a.actor == null)
+					if (a.actor == null)
 						continue;
-					if (a.actor.compareToIgnoreCase(leftName) == 0)
+					if (leftName != null && a.actor.compareToIgnoreCase(leftName) == 0) {
 						leftAction = a;
-					else if (a.actor.compareToIgnoreCase(rightName) == 0)
+						if (a.type == Action.Type.FOLD)
+							leftName = null;
+					}
+					else if (rightName != null && a.actor.compareToIgnoreCase(rightName) == 0) {
 						rightAction = a;
+						if (a.type == Action.Type.FOLD)
+							rightName = null;
+					}
 				}
 			}
 
@@ -86,6 +96,7 @@ public abstract class GenericBot {
 				String[] legalActionsTokens = tokens[5 + (numBoardCards > 0 ? 1 : 0) + (numLastActions > 0 ? 1 : 0)].split(",");
 				for (int i = 0; i < numLegalActions; i++) {
 					legalActions.add(parsePossibleAction(legalActionsTokens[i]));
+					parsePossibleAction(legalActionsTokens[i]);
 				}
 			}
 			timeBank = Double.parseDouble(tokens[5 + (numBoardCards > 0 ? 1 : 0) +
@@ -96,7 +107,7 @@ public abstract class GenericBot {
 				System.out.println("Left action: " + leftAction);
 			if (rightAction != null)
 				System.out.println("Right action: " + rightAction);
-//			System.out.println("Legal action:" + legalActions.toString());
+			System.out.println("Legal action:" + legalActions.toString());
 			response = decide(); //compute next action
 		} else if (tokens[0].compareToIgnoreCase("HANDOVER") == 0) {
 			// do nothing
@@ -157,6 +168,7 @@ public abstract class GenericBot {
 		String[] tokens = input.split(":");
 		if (tokens[0].compareToIgnoreCase("BET") == 0) {
 			int amount = Integer.parseInt(tokens[1]);
+			toBet = Integer.parseInt(tokens[1]);
 			return new Action(Action.Type.BET, amount);
 		} else if (tokens[0].compareToIgnoreCase("CALL") == 0) {
 			return new Action(Action.Type.CALL);
@@ -194,8 +206,15 @@ public abstract class GenericBot {
 		return decision;
 	}
 
-	protected abstract String preflop_computation();
-	protected abstract String flop_computation();
-	protected abstract String turn_computation();
-	protected abstract String river_computation();
+	protected double expected_value(double winProb) {
+		Action call = null;
+		for (Action a: legalActions) {
+		}
+		return winProb*stackSize;
+	}
+
+	public abstract String preflop_computation();
+	public abstract String flop_computation();
+	public abstract String turn_computation();
+	public abstract String river_computation();
 }
