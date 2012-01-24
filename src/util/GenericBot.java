@@ -20,7 +20,7 @@ public abstract class GenericBot {
 	public int rightBank;
 	public Hand myHand;
 
-	// current information
+	// temp information
 	public int potSize;
 	public int myStack;
 	public int leftStack;
@@ -28,11 +28,13 @@ public abstract class GenericBot {
 	public double timeBank;
 	public Action leftAction;
 	public Action rightAction;
+	public boolean leftFold = false;
+	public boolean rightFold = false;
 	public List<Action> legalActions = new ArrayList<Action>();
-	public boolean toCheck;
-	public int toBet;
-	public int toCall;
-	public int toCaise;
+	public boolean toCheck = false;
+	public boolean toCall = false;
+	public int toBet = -1;
+	public int toRaise = -1;
 
 	public String parse(String input) {
 		String response = null;
@@ -58,8 +60,8 @@ public abstract class GenericBot {
 			timeBank = Double.parseDouble(tokens[8]);
 			System.out.println("Hole Cards: " + myHand.hole[0] + ", " + myHand.hole[1]);
 		} else if (tokens[0].compareToIgnoreCase("GETACTION") == 0) {
+			reset_variables();
 			potSize = Integer.parseInt(tokens[1]);
-			legalActions.clear();
 			int numBoardCards = Integer.parseInt(tokens[2]);
 			if (numBoardCards > 0) {
 				String[] boardCardsTokens = tokens[3].split(",");
@@ -70,33 +72,18 @@ public abstract class GenericBot {
 			int numLastActions = Integer.parseInt(tokens[3 + (numBoardCards > 0 ? 1 : 0)]);
 			if (numLastActions > 0) {
 				String[] lastActionsTokens = tokens[4 + (numBoardCards > 0 ? 1 : 0)].split(",");
-				Action a;
-				leftAction = null;
-				rightAction = null;
 				for (int i = 0; i < numLastActions; i++) {
-					a = parsePerformedAction(lastActionsTokens[i]);
-					assert a != null;
-					if (a.actor == null)
-						continue;
-					if (leftName != null && a.actor.compareToIgnoreCase(leftName) == 0) {
-						leftAction = a;
-						if (a.type == Action.Type.FOLD)
-							leftName = null;
-					}
-					else if (rightName != null && a.actor.compareToIgnoreCase(rightName) == 0) {
-						rightAction = a;
-						if (a.type == Action.Type.FOLD)
-							rightName = null;
-					}
+					parsePerformedAction(lastActionsTokens[i]);
 				}
 			}
 
 			int numLegalActions = Integer.parseInt(tokens[4 + (numBoardCards > 0 ? 1 : 0) + (numLastActions > 0 ? 1 : 0)]);
 			if (numLastActions > 0) {
 				String[] legalActionsTokens = tokens[5 + (numBoardCards > 0 ? 1 : 0) + (numLastActions > 0 ? 1 : 0)].split(",");
+				Action a;
 				for (int i = 0; i < numLegalActions; i++) {
-					legalActions.add(parsePossibleAction(legalActionsTokens[i]));
-					parsePossibleAction(legalActionsTokens[i]);
+					a = parsePossibleAction(legalActionsTokens[i]);
+					legalActions.add(a);
 				}
 			}
 			timeBank = Double.parseDouble(tokens[5 + (numBoardCards > 0 ? 1 : 0) +
@@ -115,69 +102,85 @@ public abstract class GenericBot {
 			System.out.println("Packet type parse error.");
 			return null;
 		}
+		if (response != null)
+			System.out.println("My action: " + response);
 		return response;
 	}
 
 	private Action parsePerformedAction(String input) {
 		String[] tokens = input.split(":");
+		Action result = null;
 		if (tokens[0].compareToIgnoreCase("BET") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
-			return new Action(Action.Type.BET, actor, amount);
+			result = new Action(Action.Type.BET, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("CALL") == 0) {
 			String actor = tokens[1];
-			return new Action(Action.Type.CALL, actor);
+			result = new Action(Action.Type.CALL, actor);
 		} else if (tokens[0].compareToIgnoreCase("CHECK") == 0) {
 			String actor = tokens[1];
-			return new Action(Action.Type.CHECK, actor);
+			result = new Action(Action.Type.CHECK, actor);
 		} else if (tokens[0].compareToIgnoreCase("FOLD") == 0) {
 			String actor = tokens[1];
-			return new Action(Action.Type.FOLD, actor);
+			if (actor.compareToIgnoreCase(leftName) == 0)
+				leftFold = true;
+			else if (actor.compareToIgnoreCase(leftName) == 0)
+				rightFold = true;
+			result = new Action(Action.Type.FOLD, actor);
 		} else if (tokens[0].compareToIgnoreCase("RAISE") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
-			return new Action(Action.Type.RAISE, actor, amount);
+			result = new Action(Action.Type.RAISE, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("DEAL") == 0) {
-			return new Action(Action.Type.DEAL);
+			result = new Action(Action.Type.DEAL);
 		} else if (tokens[0].compareToIgnoreCase("POST") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
-			return new Action(Action.Type.POST, actor, amount);
+			result = new Action(Action.Type.POST, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("REFUND") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
-			return new Action(Action.Type.REFUND, actor, amount);
+			result = new Action(Action.Type.REFUND, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("SHOW") == 0) {
 			String actor = tokens[1];
-			return new Action(Action.Type.SHOW, actor);
+			result = new Action(Action.Type.SHOW, actor);
 		} else if (tokens[0].compareToIgnoreCase("TIE") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
-			return new Action(Action.Type.TIE, actor, amount);
+			result = new Action(Action.Type.TIE, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("WIN") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
-			return new Action(Action.Type.WIN, actor, amount);
+			result = new Action(Action.Type.WIN, actor, amount);
 		} else {
 			System.out.println("Action parse error.");
-			return null;
 		}
+		if (result.actor != null) {
+			if (result.actor.compareToIgnoreCase(leftName) == 0)
+				leftAction = result;
+			else if (result.actor.compareToIgnoreCase(rightName) == 0)
+				rightAction = result;
+		}
+		return result;
 	}
 
 	private Action parsePossibleAction(String input) {
 		String[] tokens = input.split(":");
 		if (tokens[0].compareToIgnoreCase("BET") == 0) {
 			int amount = Integer.parseInt(tokens[1]);
-			toBet = Integer.parseInt(tokens[1]);
+			toBet = amount;
 			return new Action(Action.Type.BET, amount);
 		} else if (tokens[0].compareToIgnoreCase("CALL") == 0) {
+			toCall = true;
 			return new Action(Action.Type.CALL);
 		} else if (tokens[0].compareToIgnoreCase("CHECK") == 0) {
+			toCheck = true;
 			return new Action(Action.Type.CHECK);
 		} else if (tokens[0].compareToIgnoreCase("FOLD") == 0) {
 			return new Action(Action.Type.FOLD);
 		} else if (tokens[0].compareToIgnoreCase("RAISE") == 0) {
 			int amount = Integer.parseInt(tokens[1]);
+			toRaise = amount;
 			return new Action(Action.Type.RAISE, amount);
 		} else {
 			System.out.println("Action parse error.");
@@ -206,11 +209,28 @@ public abstract class GenericBot {
 		return decision;
 	}
 
-	protected double expected_value(double winProb) {
-		Action call = null;
-		for (Action a: legalActions) {
-		}
-		return winProb*stackSize;
+	protected void reset_variables() {
+		toCheck = false;
+		toCall = false;
+		toBet = -1;
+		toRaise = -1;
+		leftAction = null;
+		rightAction = null;
+		legalActions.clear();
+	}
+
+	protected int call_value() {
+		assert toCall;
+		int result = 0;
+		if (leftAction != null && leftAction.amount > result)
+			result = leftAction.amount;
+		if (rightAction != null && rightAction.amount > result)
+			result = rightAction.amount;
+		return result;
+	}
+
+	protected double expected_value(int minbet, double winProb) {
+		return winProb*stackSize - (1-winProb)*minbet;
 	}
 
 	public abstract String preflop_computation();

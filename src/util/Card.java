@@ -60,22 +60,22 @@ public class Card {
 	public String toString() {
 		String result = "";
 		switch (r) {
-		case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
+		case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
 			result += r + 2;
 			break;
-		case 10:
+		case 8:
 			result += "T";
 			break;
-		case 11:
+		case 9:
 			result += "J";
 			break;
-		case 12:
+		case 10:
 			result += "Q";
 			break;
-		case 13:
+		case 11:
 			result += "K";
 			break;
-		case 14:
+		case 12:
 			result += "A";
 			break;
 		}

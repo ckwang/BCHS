@@ -13,7 +13,21 @@ class AlwaysCallBot extends GenericBot {
 		else {
 			prob = PokerTable.preflopWinningProb3(myHand.hole[0], myHand.hole[1]);
 		}
-		return "CHECK";
+		double odds;
+		if (toCheck) {
+			odds = expected_value(call_value(), prob);
+			return "CHECK";
+		}
+		else if (toCall) {
+			return "CALL";
+		}
+		else if (toBet > 0) {
+			return "BET " + toBet;
+		}
+		else if (toRaise > 0) {
+			return "RAISE " + toRaise;
+		}
+		return "FOLD";
 	}
 
 	@Override
