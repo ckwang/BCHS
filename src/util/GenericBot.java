@@ -14,7 +14,7 @@ public abstract class GenericBot {
 
 	// hand information
 	public int handId;
-	public int position;
+	public int position;	// 0 = dealer, 1 = sb, 2 = bb
 	public int myBank;
 	public int leftBank;
 	public int rightBank;
@@ -28,11 +28,11 @@ public abstract class GenericBot {
 	public double timeBank;
 	public Action leftAction;
 	public Action rightAction;
-	public boolean leftFold = false;
-	public boolean rightFold = false;
+	public boolean hasLeftFold = false;
+	public boolean hasRightFold = false;
 	public List<Action> legalActions = new ArrayList<Action>();
-	public boolean toCheck = false;
-	public boolean toCall = false;
+	public boolean canCheck = false;
+	public boolean canCall = false;
 	public int toBet = -1;
 	public int toRaise = -1;
 
@@ -123,9 +123,9 @@ public abstract class GenericBot {
 		} else if (tokens[0].compareToIgnoreCase("FOLD") == 0) {
 			String actor = tokens[1];
 			if (actor.compareToIgnoreCase(leftName) == 0)
-				leftFold = true;
+				hasLeftFold = true;
 			else if (actor.compareToIgnoreCase(leftName) == 0)
-				rightFold = true;
+				hasRightFold = true;
 			result = new Action(Action.Type.FOLD, actor);
 		} else if (tokens[0].compareToIgnoreCase("RAISE") == 0) {
 			String actor = tokens[1];
@@ -171,10 +171,10 @@ public abstract class GenericBot {
 			toBet = amount;
 			return new Action(Action.Type.BET, amount);
 		} else if (tokens[0].compareToIgnoreCase("CALL") == 0) {
-			toCall = true;
+			canCall = true;
 			return new Action(Action.Type.CALL);
 		} else if (tokens[0].compareToIgnoreCase("CHECK") == 0) {
-			toCheck = true;
+			canCheck = true;
 			return new Action(Action.Type.CHECK);
 		} else if (tokens[0].compareToIgnoreCase("FOLD") == 0) {
 			return new Action(Action.Type.FOLD);
@@ -210,8 +210,8 @@ public abstract class GenericBot {
 	}
 
 	protected void reset_variables() {
-		toCheck = false;
-		toCall = false;
+		canCheck = false;
+		canCall = false;
 		toBet = -1;
 		toRaise = -1;
 		leftAction = null;
@@ -220,7 +220,7 @@ public abstract class GenericBot {
 	}
 
 	protected int call_value() {
-		assert toCall;
+		assert canCall;
 		int result = 0;
 		if (leftAction != null && leftAction.amount > result)
 			result = leftAction.amount;
