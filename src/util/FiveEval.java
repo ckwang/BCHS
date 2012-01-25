@@ -280,4 +280,31 @@ public class FiveEval {
 
 		return BEST_RANK_SO_FAR;
 	}
+	public int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4,
+			int CARD5, int CARD6) {
+		int[] six_cards = { CARD1, CARD2, CARD3, CARD4, CARD5, CARD6};
+		int[] five_temp = { CARD1, CARD2, CARD3, CARD4, CARD5 };
+
+		int BEST_RANK_SO_FAR = 0, CURRENT_RANK = 0;
+		int i, j, k, m;
+
+		for (i = 1; i < 6; i++) {
+				m = 0;
+				for (k = 0; k < 6; k++) {
+					if (k != i) {
+						five_temp[m] = six_cards[k];
+						m++;
+					}
+				}
+
+				CURRENT_RANK = getRankOf(five_temp[0], five_temp[1],
+						five_temp[2], five_temp[3], five_temp[4]);
+
+				if (BEST_RANK_SO_FAR < CURRENT_RANK) {
+					BEST_RANK_SO_FAR = CURRENT_RANK;
+				}
+		}
+
+		return BEST_RANK_SO_FAR;
+	}
 }
