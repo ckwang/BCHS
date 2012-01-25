@@ -32,6 +32,7 @@ If not, see http://www.gnu.org/licenses/.
 
 package util;
 
+import java.util.Random;
 import static util.Constants.*;
 
 public class HandEval {
@@ -658,6 +659,9 @@ public class HandEval {
 		// combinations of five table cards, adding up the incremental
 		// equities to find the total integral equities.
 
+//		Random rnd = new Random();
+//		int counter = 0;
+		
 		int i = 1;
 		do {
 			int table_card_4 = undealtCards[i];
@@ -665,6 +669,17 @@ public class HandEval {
 					+ deckcardsKey[table_card_4];
 			int j = 0;
 			do {
+//				counter++;
+//				if (counter % 100 != 0) {
+//					j++;
+//					continue;
+//				}
+//				int r = rnd.nextInt(50);
+//				if (r != 1) {
+//					j++;
+//					continue;
+//				}
+				
 				int table_card_5 = undealtCards[j];
 				long table_key = table_key_cumulative_to_4
 						+ deckcardsKey[table_card_5];
