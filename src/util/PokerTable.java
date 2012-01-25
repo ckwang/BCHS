@@ -5419,6 +5419,22 @@ public class PokerTable {
 		0.407,	//ad,ad
 	};
 
+	public static double[] norm2;
+	
+	public static void makeNormTable() {
+		norm2 = new double[201];
+		
+		for (int i = 0; i < 201; i++) {
+			double norm = 0;
+			for (double d : prob2) {
+				norm += 1.0/(1+Math.exp(20*(0.3 + 0.001 * i - d)));
+			}
+			norm /= 52 * 52;
+			
+			norm2[i] = norm;
+		}
+	}
+	
 	public static double preflopWinningProb2(Card card1, Card card2) {
 		return prob2[card1.toValue()*52 + card2.toValue()];
 	}
@@ -5432,14 +5448,15 @@ public class PokerTable {
 		
 //		double norm = 0;
 //		for (double i : prob2) {
-//			if (i >= threshold)	norm += i;
+//			norm += 1.0/(1+Math.exp(20*(threshold - i)));
 //		}
-//		
-//		System.out.println(norm);
+//		norm /= 52 * 52;
+		double norm = norm2[(int) ((threshold - 0.3) / 0.001)];
+		System.out.println(norm);
 		
 		for (int i = 0; i < cards.size() / 2; i++) {
 			double winningProb = preflopWinningProb2(cards.get(2*i), cards.get(2*i+1));
-			double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));
+			double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb))) / norm;
 
 			result.add(playingProb);
 		}
