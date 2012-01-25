@@ -9,6 +9,11 @@ public class Card {
 		this.r = r;
 	}
 	
+	public Card(int n) {
+		this.r = n / 4;
+		this.s = n % 4;
+	}
+
 	public Card(String input) {
 		switch (input.charAt(0)) {
 		case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
@@ -52,6 +57,18 @@ public class Card {
 		}
 	}
 	
+	public static int toValue(int s, int r) {
+		return r*4 + s;
+	}
+	
+	public static int valueToSuit(int n) {
+		return n % 4;
+	}
+	
+	public static int valueToRank(int n) {
+		return n / 4;
+	}
+	
 	public int toValue() {
 		return r*4 + s;
 	}
@@ -78,6 +95,8 @@ public class Card {
 		case 12:
 			result += "A";
 			break;
+		case -1:
+			result += "_";
 		}
 		switch (s) {
 		case 0:
@@ -92,6 +111,8 @@ public class Card {
 		case 3:
 			result += "d";
 			break;
+		case -1:
+			result += "_";
 		}
 		return result;
 	}

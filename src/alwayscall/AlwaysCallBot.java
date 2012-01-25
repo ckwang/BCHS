@@ -6,32 +6,77 @@ class AlwaysCallBot extends GenericBot {
 	
 	@Override
 	public String preflop_computation() {
-		double prob;
-		if (leftName == null || rightName == null) {
-			prob = PokerTable.preflopWinningProb2(myHand.hole[0], myHand.hole[1]);
+		Card[] holeCards = myHand.hole;
+		double winningProb;
+		
+		switch (position) {
+		case 0:	// dealer
+			winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+			if (winningProb >= 0.33) {
+				return "CALL";
+			} else {
+				return "FOLD";
+			}
+		case 1:	// sb
+			if (hasRightFold) {
+				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
+				if (winningProb >= 0.5) {
+					return "CALL"; 
+				} else {
+					return "FOLD";
+				}
+			} else {
+				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+				if (winningProb >= 0.33) {
+					return "CALL";
+				} else {
+					return "FOLD";
+				}
+			}
+		case 2:	// bb
+			if (hasLeftFold || hasRightFold) {
+				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
+				if (winningProb >= 0.5) {
+					return "CALL"; 
+				} else {
+					return "FOLD";
+				}
+			} else {
+				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+				if (winningProb >= 0.33) {
+					return "CALL";
+				} else {
+					return "FOLD";
+				}
+			}
 		}
-		else {
-			prob = PokerTable.preflopWinningProb3(myHand.hole[0], myHand.hole[1]);
-		}
-		double odds;
-		if (toCheck) {
-			odds = expected_value(call_value(), prob);
-			return "CHECK";
-		}
-		else if (toCall) {
-			return "CALL";
-		}
-		else if (toBet > 0) {
-			return "BET " + toBet;
-		}
-		else if (toRaise > 0) {
-			return "RAISE " + toRaise;
-		}
-		return "FOLD";
+		
+		return null;
 	}
 
 	@Override
 	public String flop_computation() {
+		switch (position) {
+		case 1:	// sb
+			if (hasLeftFold || hasRightFold) {
+				
+			} else {
+
+			}
+		case 2:	// bb
+			if (hasLeftFold || hasRightFold) {
+
+			} else {
+
+			}
+		case 0:	// dealer
+			if (hasLeftFold || hasRightFold) {
+				
+			} else {
+
+			}
+		}
+		
 		return "CHECK";
 	}
 

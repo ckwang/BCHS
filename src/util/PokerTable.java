@@ -1,5 +1,8 @@
 package util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PokerTable {
 
 	private static double[] prob2 = {
@@ -5422,6 +5425,26 @@ public class PokerTable {
 	
 	public static double preflopWinningProb3(Card card1, Card card2) {
 		return prob3[card1.toValue()*52 + card2.toValue()];
+	}
+	
+	public static List<Double> assignProb2(List<Card> cards, double threshold) {
+		List<Double> result = new ArrayList<Double>();
+		
+//		double norm = 0;
+//		for (double i : prob2) {
+//			if (i >= threshold)	norm += i;
+//		}
+//		
+//		System.out.println(norm);
+		
+		for (int i = 0; i < cards.size() / 2; i++) {
+			double winningProb = preflopWinningProb2(cards.get(2*i), cards.get(2*i+1));
+			double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));
+
+			result.add(playingProb);
+		}
+		
+		return result;
 	}
 	
 	public static void main(String[] args) {
