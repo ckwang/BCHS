@@ -203,6 +203,11 @@ public class Hand {
 				for (int j = 0; j < 4; j++) {
 					if (suit[j])	continue;
 					int first = Card.toValue(j, i);
+<<<<<<< HEAD
+=======
+					if (usedCards.contains(first))	continue;
+					
+>>>>>>> 4fa2bd2e86beed408c4eeb179efdb476848b353e
 					for (int k = 0; k < 52; k++) {
 						if (usedCards.contains(k) || k == first)	continue;
 						result.add(new Card(j, i));
@@ -231,25 +236,122 @@ public class Hand {
 			for (int j = 0; j < 13; j++) {	// short
 				if (i == j)	continue;
 				int necessaryLong = Math.max(3 - rankCount[i], 0);
-				int necessaryShort = Math.max(2 - rankCount[i], 0);
+				int necessaryShort = Math.max(2 - rankCount[j], 0);
 				switch (necessaryLong + necessaryShort) {
 				case 0:
 					// TODO: what to do if already in this category
 				case 1:
 					if (necessaryLong == 1) {	// need 1 long
+						boolean[] usedSuit = new boolean[4]; 
 						
+						for (Card c : community) {
+							if (c.r == i)	usedSuit[c.s] = true;
+						}
+						
+						for (int k = 0; k < 4; k++) {
+							if (usedSuit[k])	continue;
+							int first = Card.toValue(k, i);
+							if (usedCards.contains(first))	continue;
+							
+							for (int w = 0; w < 52; w++) {
+								if (usedCards.contains(w) || Card.valueToRank(w) == i)	continue;
+								
+								result.add(new Card(first));
+								result.add(new Card(w));
+							}
+						}
 					} else {	// need 1 short
+						boolean[] usedSuit = new boolean[4]; 
 						
+						for (Card c : community) {
+							if (c.r == j)	usedSuit[c.s] = true;
+						}
+						
+						for (int k = 0; k < 4; k++) {
+							if (usedSuit[k])	continue;
+							int first = Card.toValue(k, j);
+							if (usedCards.contains(first))	continue;
+							
+							for (int w = 0; w < 52; w++) {
+								if (usedCards.contains(w) || Card.valueToRank(w) == j)	continue;
+								
+								result.add(new Card(first));
+								result.add(new Card(w));
+							}
+						}
 					}
 					break;
 				case 2:
 					switch (necessaryLong) {
 					case 0:
+						boolean[] usedSuit = new boolean[4]; 
 						
+						for (Card c : community) {
+							if (c.r == j)	usedSuit[c.s] = true;
+						}
+						
+						for (int k = 0; k < 4; k++) {
+							if (usedSuit[k])	continue;
+							int first = Card.toValue(k, j);
+							if (usedCards.contains(first))	continue;
+							
+							for (int w = k + 1; w < 4; w++) {
+								int second = Card.toValue(w, j);
+								if (usedCards.contains(second))	continue;
+								
+								result.add(new Card(first));
+								result.add(new Card(second));
+							}
+						}
+						
+						break;
 					case 1:
+						boolean[] usedSuitLong = new boolean[4];
+						boolean[] usedSuitShort = new boolean[4]; 
 						
+						for (Card c : community) {
+							if (c.r == i)	usedSuitLong[c.s] = true;
+							if (c.r == j)	usedSuitShort[c.s] = true;
+						}
+						
+						for (int k = 0; k < 4; k++) {
+							if (usedSuitLong[k])	continue;
+							int first = Card.toValue(k, i);
+							if (usedCards.contains(first))	continue;
+							
+							for (int w = 0; w < 4; w++) {
+								if (usedSuitShort[w])	continue;
+								int second = Card.toValue(w, j);
+								if (usedCards.contains(second))	continue;
+								
+								result.add(new Card(first));
+								result.add(new Card(second));
+							}
+						}
+						
+						break;
 					case 2:
+						usedSuit = new boolean[4]; 
 						
+						for (Card c : community) {
+							if (c.r == i)	usedSuit[c.s] = true;
+						}
+						
+						for (int k = 0; k < 4; k++) {
+							if (usedSuit[k])	continue;
+							int first = Card.toValue(k, i);
+							if (usedCards.contains(first))	continue;
+							
+							for (int w = k + 1; w < 4; w++) {
+								int second = Card.toValue(w, i);
+								if (usedCards.contains(second))	continue;
+								
+								result.add(new Card(first));
+								result.add(new Card(second));
+							}
+						}
+						
+						break;
 					}
 					break;
 				default:
@@ -297,7 +399,69 @@ public class Hand {
 
 	public List<Card> analyzePossibleStraight() {
 		List<Card> result = new ArrayList<Card>();
-		// from 2 
+		// A2345
+		{
+			boolean[] occupied = new boolean[5];
+			int count = 0;
+			
+			for (Card c : community) {
+				if (c.r == 12)	occupied[0] = true;
+				if (c.r >= 0 && c.r < 4) {
+					occupied[c.r + 1] = true;
+				}
+			}
+			
+			for (int j = 0; j < 5; j++) {
+				if (occupied[j])	count++;
+			}
+			
+			switch (count) {
+			case 5:
+				// TODO: what to do with same category
+				break;
+			case 4:
+				int rank = 0;
+				for (int j = 0; j < 5; j++) {
+					if (occupied[j])	continue;
+					rank = (j == 0) ? 12 : (j - 1);
+				}
+				
+				for (int j = 0; j < 4; j++) {
+					if (usedCards.contains(Card.toValue(j, rank)))	continue;	
+					for (int k = 0; k < 52; k++) {
+						if (usedCards.contains(k) || k == Card.toValue(j, rank))	continue;
+						result.add(new Card(j, rank));
+						result.add(new Card(k));
+					}
+				}
+				
+				break;
+			case 3:
+				int rank1 = 0, rank2 = 0;
+				for (int j = 0; j < 5; j++) {
+					if (!occupied[j]) {
+						rank1 = (j == 0) ? 12 : (j - 1);
+						for (int k = j + 1; k < 5; k++) {
+							if (!occupied[k])	rank2 = (k == 0) ? 12 : (k - 1);
+						}
+						break;
+					}
+				}
+				
+				for (int j = 0; j < 4; j++) {
+					if (usedCards.contains(Card.toValue(j, rank1)))	continue;
+					for (int k = 0; k < 4; k++) {
+						if (usedCards.contains(Card.toValue(k, rank2)))	continue;
+						result.add(new Card(j, rank1));
+						result.add(new Card(k, rank2));
+					}
+				}
+				
+				break;
+			}
+		}
+		
+		// others
 		for (int i = 0; i <= 8; i++) {
 			boolean[] occupied = new boolean[5];
 			int count = 0;
@@ -348,9 +512,9 @@ public class Hand {
 				for (int j = 0; j < 4; j++) {
 					if (usedCards.contains(Card.toValue(j, rank1)))	continue;
 					for (int k = 0; k < 4; k++) {
-						if (usedCards.contains(Card.toValue(j, rank2)))	continue;
+						if (usedCards.contains(Card.toValue(k, rank2)))	continue;
 						result.add(new Card(j, rank1));
-						result.add(new Card(j, rank2));
+						result.add(new Card(k, rank2));
 					}
 				}
 				

@@ -61,6 +61,14 @@ public class Card {
 		return r*4 + s;
 	}
 	
+	public static int valueToSuit(int n) {
+		return n % 4;
+	}
+	
+	public static int valueToRank(int n) {
+		return n / 4;
+	}
+	
 	public int toValue() {
 		return r*4 + s;
 	}
