@@ -4,6 +4,20 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class ExpectedHand {
+	public static double drawTh = 0.9;
+	public class PossibleHand{
+		public double prob;
+		public int c1,c2;
+		public double rank; // large->good
+		public double odd; 
+		public double draw;
+		PossibleHand(int nc1,int nc2,double nprob){
+			c1=nc1;
+			c2=nc2;
+			prob=nprob;
+		}
+	}
+	
 	public static final double EPS = 1e-8;
 	public static final int BASE = 64;
 	public final double[] prob = new double[52*52];
@@ -72,7 +86,7 @@ public class ExpectedHand {
 		}
 		normalize();
 	}
-	public double computeOdds(int c1,int c2){
+	public double computeOdds(int c1,int c2){ //return 0-100
 		double result = 0.0, aggr = 0.0;
 		for(int i=0;i<len;i++){
 			if(hand[i]%BASE == c1 || hand[i]%BASE == c2)continue;
@@ -91,8 +105,9 @@ public class ExpectedHand {
 						new int[]{c1,c2,hand[i]/BASE,hand[i]%BASE}, 
 						comCard, 2)[0] * prob[i];
 			}else{
-				result += handeval.computePreFlopEquityForSpecificHoleCards(
-						new int[]{c1,c2,hand[i]/BASE,hand[i]%BASE}, 2)[0] * prob[i];
+				/*result += handeval.computePreFlopEquityForSpecificHoleCards(
+						new int[]{c1,c2,hand[i]/BASE,hand[i]%BASE}, 2)[0] * prob[i];*/
+				result += PreflopTable.getProb(c1, c2, hand[i]/BASE,hand[i]%BASE)*100*prob[i];
 			}
 		}		
 		return result/aggr;
