@@ -16,18 +16,18 @@ public class TableGen {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		for(int i=12;i<13;i++){
-			for(int j=10;j<13;j++){System.out.println(i+" "+j);
+		for(int i=0;i<13;i++){
+			for(int j=0;j<13;j++){System.out.println(i+" "+j);
 				for(int k=0;k<13;k++){
 					for(int l=0;l<13;l++){
 						int used = 0;
 						int[] send = new int[4];
-						if(i<=j){
+						if(i<=j){//o
 							send[0]=i*4+used;
 							used++;
 							send[1]=j*4+used;
 							used++;
-						}else{
+						}else{//s
 							send[0]=i*4+used;
 							send[1]=j*4+used;
 							used++;
