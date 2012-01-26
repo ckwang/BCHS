@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Random;
 
 import lib.HandEval;
+import lib.FiveEval;
 
 public class ExpectedHand {
 	public static double drawTh = 0.1;
