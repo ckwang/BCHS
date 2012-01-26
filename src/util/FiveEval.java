@@ -288,7 +288,7 @@ public class FiveEval {
 		int BEST_RANK_SO_FAR = 0, CURRENT_RANK = 0;
 		int i, j, k, m;
 
-		for (i = 1; i < 6; i++) {
+		for (i = 0; i < 6; i++) {
 				m = 0;
 				for (k = 0; k < 6; k++) {
 					if (k != i) {
