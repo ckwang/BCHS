@@ -2,11 +2,14 @@ package util;
 
 import java.util.List;
 
+import lib.FiveEval;
+import java.util.Random;
+
 public class testHandAnalyze {
 	public static void main(String[] args) {
-		Hand h = new Hand(new Card("Qc"), new Card("Qd"));
+		Hand h = new Hand(new Card("Ac"), new Card("Ad"));
 		h.addCards(new Card("7s"));
-		h.addCards(new Card("Qs"));
+		h.addCards(new Card("3s"));
 		h.addCards(new Card("3d"));
 		
 		PokerTable.makeNormTable();
@@ -30,9 +33,46 @@ public class testHandAnalyze {
 //		}
 		long end = System.nanoTime();
 		
-//		// renormalize winning prob if opp check
+		FiveEval e = new FiveEval();
+		Random r = new Random();
+		
+		// Monte Carlo p1
+		start = System.nanoTime();
+		int rank_our = e.getRankOf(h.hole[0].toLibValue(), h.hole[1].toLibValue(),
+				h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+		
+		int win_count = 0;
+		
+		for (int i = 0; i < 1000; i++) {
+			int c1, c2;
+			do {
+				c1 = r.nextInt(52);
+			} while (h.usedCards.contains(c1));
+			do {
+				c2 = r.nextInt(52);
+			} while (h.usedCards.contains(c2) || (c1 == c2));
+			int c1_lib = new Card(c1).toLibValue();
+			int c2_lib = new Card(c2).toLibValue();
+			
+			int rank_opp = e.getRankOf(c1_lib, c2_lib,
+				h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+			
+			if (rank_opp > rank_our)	win_count++;
+		}
+		end = System.nanoTime();
+		System.out.println("win_prob: " + (win_count * 1.0 / 1000));
+		
+		// renormalize winning prob if opp check
 //		for (int i = 0; i < quadProbs.size(); i++) {
-//
+//			for (int j = 0; j < quadProbs.size(); j++) {
+//				if (i == j)	continue;
+//				int ranki = e.getRankOf(quadHands.get(2*i).toLibValue(), quadHands.get(2*i+1).toLibValue(),
+//						h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+//				int rankj = e.getRankOf(quadHands.get(2*j).toLibValue(), quadHands.get(2*j+1).toLibValue(),
+//						h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+//				
+//				
+//			}
 //		}
 //		for (int i = 0; i < fullhouseProbs.size(); i++) {
 //
@@ -43,11 +83,11 @@ public class testHandAnalyze {
 //		for (int i = 0; i < straightProbs.size(); i++) {
 //			
 //		}
-//		
+
 		
 		
 		System.out.println((end-start)/1000000.0);
-		double sum = 0;
+//		double sum = 0;
 //		for (int i = 0; i < quadProbs.size(); i++) {
 //			System.out.println(quadHands.get(2*i) + ", " + quadHands.get(2*i+1) + ": " + quadProbs.get(i));
 //			sum += quadProbs.get(i);
@@ -73,11 +113,11 @@ public class testHandAnalyze {
 //			sum += twoPairProbs.get(i);
 //		}
 		
-		for (int i = 0; i < tripletHands.size() / 2; i++) {
-			System.out.println(tripletHands.get(2*i) + ", " + tripletHands.get(2*i+1) + ": ");
-//			sum += twoPairProbs.get(i);
-		}
+//		for (int i = 0; i < twoPairHands.size() / 2; i++) {
+//			System.out.println(twoPairHands.get(2*i) + ", " + twoPairHands.get(2*i+1) + ": ");
+////			sum += twoPairProbs.get(i);
+//		}
 		
-		System.out.println(sum / 47 / 46 * 2);
+//		System.out.println(sum / 47 / 46 * 2);
 	}
 }

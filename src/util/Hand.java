@@ -21,7 +21,7 @@ public class Hand {
 	public List<Card> bestHand;
 	public int[] suitCount = {0, 0, 0, 0};
 	public int[] rankCount = new int[13];
-	private Set<Integer> usedCards = new HashSet<Integer>();
+	public Set<Integer> usedCards = new HashSet<Integer>();
 
 	public Hand(Card c1, Card c2) {
 		hole[0] = c1;
