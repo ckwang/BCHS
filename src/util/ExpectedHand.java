@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 
+import lib.HandEval;
+
 public class ExpectedHand {
 	public static double drawTh = 0.1;
 	public class PossibleHand implements Comparable{

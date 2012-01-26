@@ -4,7 +4,8 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
-import util.HandEval;
+import lib.HandEval;
+
 
 public class TableGen {
 	public static void main(String[] args){

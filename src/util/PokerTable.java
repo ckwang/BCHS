@@ -5419,36 +5419,96 @@ public class PokerTable {
 		0.407,	//ad,ad
 	};
 
+	public static double[] norm2;
+	
+	public static void makeNormTable() {
+		norm2 = new double[201];
+		
+		for (int i = 0; i < 201; i++) {
+			double norm = 0;
+			for (double d : prob2) {
+				norm += 1.0/(1+Math.exp(20*(0.3 + 0.001 * i - d)));
+			}
+			norm /= 52 * 52;
+			
+			norm2[i] = norm;
+		}
+	}
+	
 	public static double preflopWinningProb2(Card card1, Card card2) {
 		return prob2[card1.toValue()*52 + card2.toValue()];
+	}
+
+	public static double preflopWinningProb2(int s1, int r1, int s2, int r2) {
+		return prob2[Card.toValue(s1, r1)*52 + Card.toValue(s2, r2)];
 	}
 	
 	public static double preflopWinningProb3(Card card1, Card card2) {
 		return prob3[card1.toValue()*52 + card2.toValue()];
 	}
 	
+	public static double preflopWinningProb3(int s1, int r1, int s2, int r2) {
+		return prob3[Card.toValue(s1, r1)*52 + Card.toValue(s2, r2)];
+	}
+
 	public static List<Double> assignProb2(List<Card> cards, double threshold) {
 		List<Double> result = new ArrayList<Double>();
-		
-//		double norm = 0;
-//		for (double i : prob2) {
-//			if (i >= threshold)	norm += i;
-//		}
-//		
-//		System.out.println(norm);
-		
-		for (int i = 0; i < cards.size() / 2; i++) {
-			double winningProb = preflopWinningProb2(cards.get(2*i), cards.get(2*i+1));
-			double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));
 
-			result.add(playingProb);
-		}
+		double norm = norm2[(int) ((threshold - 0.3) / 0.001)];
+		System.out.println(norm);
 		
+		double winprob, playprob;
+		for (int i = 0; i < cards.size()/2; i++) {
+			Card c1 = cards.get(2*i);
+			Card c2 = cards.get(2*i + 1);
+			boolean[] loop = {true, true, true, true};
+			for (int a = 0; a < 4 && loop[0]; ++a) {
+				if (c1.s != -1) {
+					a = c1.s;
+					loop[0] = false;
+				}
+				loop[1] = true;
+				for (int b = 0; b < 13 && loop[1]; ++b) {
+					if (c1.r != -1) {
+						b = c1.r;
+						loop[1] = false;
+					}
+					loop[2] = true;
+					for (int c = 0; c < 4 && loop[2]; ++c) {
+						if (c2.s != -1) {
+							c = c2.s;
+							loop[2] = false;
+						}
+						loop[3] = true;
+						for (int d = 0; d < 13 && loop[3]; ++d) {
+							if (c2.r != -1) {
+								d = c2.r;
+								loop[3] = false;
+							}
+							winprob = preflopWinningProb2(a, b, c, d);
+							playprob = 1.0/(1+Math.exp(20*(threshold - winprob))) / norm;
+							result.add(playprob);
+						}
+					}
+				}
+			}
+		}
 		return result;
 	}
 	
 	public static void main(String[] args) {
-		System.out.println(preflopWinningProb3(new Card("2c"), new Card("7s")));
+//		System.out.println(preflopWinningProb3(new Card("2c"), new Card("7s")));
+		List<Card> list = new ArrayList<Card>();
+		list.add(new Card (-1, -1));
+		list.add(new Card (1, -1));
+//		list.add(new Card (-1, -1));
+//		list.add(new Card (-1, -1));
+//		list.add(new Card (1, 1));
+//		list.add(new Card (1, 1));
+		long start = System.nanoTime();
+		assignProb2(list, 0.5);
+		long end = System.nanoTime();
+		System.out.println("time: " + (end - start)/1000000);
 	}
-	
+
 }

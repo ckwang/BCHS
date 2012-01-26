@@ -30,10 +30,11 @@ If not, see http://www.gnu.org/licenses/.
 @author Kenneth J. Shackleton
  */
 
-package util;
+package lib;
 
 import java.util.Random;
-import static util.Constants.*;
+
+import static lib.Constants.*;
 
 public class HandEval {
 	// Ranks for 7-card evaluation separated

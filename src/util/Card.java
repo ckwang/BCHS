@@ -69,6 +69,23 @@ public class Card {
 		return n / 4;
 	}
 	
+	public int toLibValue() {
+		int nr = 12 - r;
+		int ns;
+		switch (s) {
+		case 2:
+			ns = 3;
+			break;
+		case 3:
+			ns = 2;
+			break;
+		default:
+			ns = s;
+		}
+		
+		return r*4 + s;
+	}
+	
 	public int toValue() {
 		return r*4 + s;
 	}
