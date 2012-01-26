@@ -5498,14 +5498,17 @@ public class PokerTable {
 	
 	public static void main(String[] args) {
 //		System.out.println(preflopWinningProb3(new Card("2c"), new Card("7s")));
-//		List<Card> list = new ArrayList<Card>();
-//		list.add(new Card (-1, -1));
-//		list.add(new Card (-1, 1));
+		List<Card> list = new ArrayList<Card>();
+		list.add(new Card (-1, -1));
+		list.add(new Card (1, -1));
 //		list.add(new Card (-1, -1));
 //		list.add(new Card (-1, -1));
 //		list.add(new Card (1, 1));
 //		list.add(new Card (1, 1));
-//		assignProb2(list, 0.5);
+		long start = System.nanoTime();
+		assignProb2(list, 0.5);
+		long end = System.nanoTime();
+		System.out.println("time: " + (end - start)/1000000);
 	}
-	
+
 }
