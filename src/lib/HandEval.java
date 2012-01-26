@@ -40,25 +40,25 @@ public class HandEval {
 	// Ranks for 7-card evaluation separated
 	// into non-flushes and flushes, each with
 	// their own respective keys
-	private int rankArray[];
-	private int flushRankArray[];
+	private static int rankArray[];
+	private static int flushRankArray[];
 
 	// Card face values beginning with ACE_ from
 	// index 0 and TWO_ from index 48.
-	private long deckcardsKey[];
-	private int deckcardsFlush[];
-	private int deckcardsSuit[];
+	private static long deckcardsKey[];
+	private static int deckcardsFlush[];
+	private static int deckcardsSuit[];
 
 	// Array comprising of the flush suits.
-	private short flushCheckArray[];
+	private static short flushCheckArray[];
 
-	public HandEval() {
+	static  {
 		initialiseDeck();
 		initialiseRanking();
 		generateFlushCheck();
 	}
 
-	private void initialiseDeck() {
+	private static void initialiseDeck() {
 		deckcardsKey = new long[DECK_SIZE];
 		deckcardsFlush = new int[DECK_SIZE];
 		deckcardsSuit = new int[DECK_SIZE];
@@ -91,7 +91,7 @@ public class HandEval {
 		}
 	}
 
-	public int getRankOfSeven(int card_1, int card_2, int card_3, int card_4,
+	public static int getRankOfSeven(int card_1, int card_2, int card_3, int card_4,
 			int card_5, int card_6, int card_7) {
 		long KEY = deckcardsKey[card_1] + deckcardsKey[card_2]
 				+ deckcardsKey[card_3] + deckcardsKey[card_4]
@@ -123,7 +123,7 @@ public class HandEval {
 		}
 	}
 
-	public void initialiseRanking() {
+	public static void initialiseRanking() {
 		FiveEval fiveEval = new FiveEval();
 		rankArray = new int[MAX_NONFLUSH_KEY_INT + 1];
 		flushRankArray = new int[MAX_KEY_INT + 1];
@@ -238,7 +238,7 @@ public class HandEval {
 		}
 	}
 
-	private void generateFlushCheck() {
+	private static void generateFlushCheck() {
 		flushCheckArray = new short[MAX_FLUSH_CHECK_SUM + 1];
 		int card_1, card_2, card_3, card_4, card_5, card_6, card_7;
 
@@ -304,7 +304,7 @@ public class HandEval {
 		}
 	}
 
-	public double[] computePreFlopEquityForSpecificHoleCards(int[] holeCards,
+	public static double[] computePreFlopEquityForSpecificHoleCards(int[] holeCards,
 			int number_of_players) {
 		if (holeCards == null || number_of_players <= 0
 				|| holeCards.length != 2 * number_of_players) {
@@ -553,7 +553,7 @@ public class HandEval {
 		return equity_percentage;
 	}
 
-	public double[] computeFlopEquityForSpecificCards(int[] holeCards,
+	public static double[] computeFlopEquityForSpecificCards(int[] holeCards,
 			int[] tableCards, int number_of_players) {
 		if (holeCards == null || number_of_players <= 0
 				|| holeCards.length != 2 * number_of_players) {
@@ -813,7 +813,7 @@ public class HandEval {
 		return equity_percentage;
 	}
 
-	public double[] computeTurnEquityForSpecificCards(int[] holeCards,
+	public static double[] computeTurnEquityForSpecificCards(int[] holeCards,
 			int[] tableCards, int number_of_players) {
 		if (holeCards == null || number_of_players <= 0
 				|| holeCards.length != 2 * number_of_players) {
@@ -1050,7 +1050,7 @@ public class HandEval {
 		return equity_percentage;
 	}
 
-	public double[] computeRiverEquityForSpecificCards(int[] holeCards,
+	public static double[] computeRiverEquityForSpecificCards(int[] holeCards,
 			int[] tableCards, int number_of_players) {
 		if (holeCards == null || number_of_players <= 0
 				|| holeCards.length != 2 * number_of_players) {

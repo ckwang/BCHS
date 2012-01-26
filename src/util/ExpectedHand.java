@@ -63,9 +63,7 @@ public class ExpectedHand {
 	public int len = 0;
 	public int common = 0;
 	public final int[] comCard = new int [5];
-	public static final HandEval handeval = new HandEval();
 	public static final Random generator = new Random(12345);
-	public static final FiveEval fiveeval = new FiveEval();
 	
 	public ExpectedHand(){
 		for(int i=51;i>=0;i--){
@@ -95,17 +93,17 @@ public class ExpectedHand {
 	public void updateRank(){
 		if(common == 3){
 			for(int i=0;i<len;i++){
-				hand[i].rank = fiveeval.getRankOf(
+				hand[i].rank = FiveEval.getRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2]);
 			}
 		}else if(common == 4){
 			for(int i=0;i<len;i++){
-				hand[i].rank = fiveeval.getBestRankOf(
+				hand[i].rank = FiveEval.getBestRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2], comCard[3]);
 			}
 		}else if(common == 5){
 			for(int i=0;i<len;i++){
-				hand[i].rank = fiveeval.getBestRankOf(
+				hand[i].rank = FiveEval.getBestRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2], comCard[3], comCard[4]);
 			}
 		}
@@ -145,10 +143,10 @@ public class ExpectedHand {
 				}
 				if(common==3){
 					//System.out.println(tmphand[i].ph.c1+" "+tmphand[i].ph.c2+" "+comCard[0]+" "+comCard[1]+" "+comCard[2]+" "+c);
-					tmphand[i].rank = fiveeval.getBestRankOf(tmphand[i].ph.c1, tmphand[i].ph.c2,
+					tmphand[i].rank = FiveEval.getBestRankOf(tmphand[i].ph.c1, tmphand[i].ph.c2,
 							comCard[0], comCard[1], comCard[2], c);
 				}else if(common==4){
-					tmphand[i].rank = fiveeval.getBestRankOf(tmphand[i].ph.c1, tmphand[i].ph.c2,
+					tmphand[i].rank = FiveEval.getBestRankOf(tmphand[i].ph.c1, tmphand[i].ph.c2,
 							comCard[0], comCard[1], comCard[2], comCard[3], c);
 				}
 			}
@@ -240,19 +238,19 @@ public class ExpectedHand {
 			if(hand[i].c1 == c1 || hand[i].c1 == c2)continue;
 			aggr += hand[i].prob;
 			if(common == 3){
-				result += handeval.computeFlopEquityForSpecificCards(
+				result += HandEval.computeFlopEquityForSpecificCards(
 						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
 						new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] * hand[i].prob;
 			}else if(common == 4){
-				result += handeval.computeTurnEquityForSpecificCards(
+				result += HandEval.computeTurnEquityForSpecificCards(
 						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
 						new int[]{comCard[0],comCard[1],comCard[2],comCard[3]}, 2)[0] * hand[i].prob;
 			}else if(common == 5){
-				result += handeval.computeRiverEquityForSpecificCards(
+				result += HandEval.computeRiverEquityForSpecificCards(
 						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
 						comCard, 2)[0] * hand[i].prob;
 			}else{
-				/*result += handeval.computePreFlopEquityForSpecificHoleCards(
+				/*result += HandEval.computePreFlopEquityForSpecificHoleCards(
 						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 2)[0] * hand[i].prob;*/
 				result += PreflopTable.getProb(c1, c2, hand[i].c1,hand[i].c2)*100*hand[i].prob;
 			}
@@ -268,15 +266,15 @@ public class ExpectedHand {
 			if(sample[i].c1 == c1 || sample[i].c1 == c2)continue;
 			aggr += 1.0/iter;
 			if(common == 3){
-				result += handeval.computeFlopEquityForSpecificCards(
+				result += HandEval.computeFlopEquityForSpecificCards(
 						new int[]{c1,c2,sample[i].c1,sample[i].c2}, 
 						new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] / iter;
 			}else if(common == 4){
-				result += handeval.computeTurnEquityForSpecificCards(
+				result += HandEval.computeTurnEquityForSpecificCards(
 						new int[]{c1,c2,sample[i].c1,sample[i].c2}, 
 						new int[]{comCard[0],comCard[1],comCard[2],comCard[3]}, 2)[0] / iter;
 			}else if(common == 5){
-				result += handeval.computeRiverEquityForSpecificCards(
+				result += HandEval.computeRiverEquityForSpecificCards(
 						new int[]{c1,c2,sample[i].c1,sample[i].c2}, 
 						comCard, 2)[0] / iter;
 			}else{
