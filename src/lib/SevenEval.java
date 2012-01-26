@@ -1,6 +1,6 @@
-package util;
+package lib;
 
-import static util.Constants.*;
+import static lib.Constants.*;
 
 // SevenEval.h
 // SpecialKEvalv1

@@ -1,4 +1,4 @@
-package util;
+package lib;
 
 public class Constants {
 	public static final int BIG_NUMBER = 100000000 * 7;

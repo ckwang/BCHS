@@ -1,6 +1,7 @@
-package util;
+package lib;
 
 import java.util.Random;
+
 
 
 public class Equity {

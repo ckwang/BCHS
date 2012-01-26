@@ -6,7 +6,7 @@ public class testHandAnalyze {
 	public static void main(String[] args) {
 		Hand h = new Hand(new Card("Qc"), new Card("Qd"));
 		h.addCards(new Card("7s"));
-		h.addCards(new Card("8s"));
+		h.addCards(new Card("Qs"));
 		h.addCards(new Card("3d"));
 		
 		PokerTable.makeNormTable();
@@ -73,8 +73,8 @@ public class testHandAnalyze {
 //			sum += twoPairProbs.get(i);
 //		}
 		
-		for (int i = 0; i < twoPairHands.size() / 2; i++) {
-			System.out.println(twoPairHands.get(2*i) + ", " + twoPairHands.get(2*i+1) + ": ");
+		for (int i = 0; i < tripletHands.size() / 2; i++) {
+			System.out.println(tripletHands.get(2*i) + ", " + tripletHands.get(2*i+1) + ": ");
 //			sum += twoPairProbs.get(i);
 		}
 		

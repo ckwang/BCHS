@@ -3,6 +3,8 @@ package util;
 import java.util.Arrays;
 import java.util.Random;
 
+import lib.HandEval;
+
 public class ExpectedHand {
 	public static double drawTh = 0.9;
 	public class PossibleHand{

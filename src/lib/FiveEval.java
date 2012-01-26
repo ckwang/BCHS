@@ -26,9 +26,9 @@
 // If not, see http://www.gnu.org/licenses/.
 //
 
-package util;
+package lib;
 
-import static util.Constants.*;
+import static lib.Constants.*;
 
 public class FiveEval {
 
