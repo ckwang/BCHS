@@ -585,8 +585,8 @@ public class Hand {
 		if (pairs.size() >= 2)
 			return null;
 		if (singles.size() > 1) {
-			for (int i = 0; i < singles.size(); ++i) {
-				for (int j = i; j < singles.size(); ++j) {
+			for (int i = 1; i < singles.size(); ++i) {
+				for (int j = 0; j < i; ++j) {
 					result.add(new Card(-1, singles.get(i)));
 					result.add(new Card(-1, singles.get(j)));
 				}
