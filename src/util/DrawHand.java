@@ -27,6 +27,13 @@ public class DrawHand {
 		usedCards.add(c4.toValue());
 	}
 	
+	public static int twoLibCardsToInt(int lc1, int lc2) {
+		int c1 = Card.libValueToValue(lc1);
+		int c2 = Card.libValueToValue(lc2);
+		
+		return (c2 > c1) ? (c1 * 52 + c2) : (c2 * 52 + c1);
+	}
+	
 	public static int twoCardsToInt(int c1, int c2) {
 		return (c2 > c1) ? (c1 * 52 + c2) : (c2 * 52 + c1);
 	}
