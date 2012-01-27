@@ -64,6 +64,7 @@ public class ExpectedHand {
 	public int len = 0;
 	public int common = 0;
 	public final int[] comCard = new int [5];
+	public final int[] shuffle = new int [52*52];
 	public static final Random generator = new Random(12345);
 	
 	public ExpectedHand(){
@@ -231,59 +232,45 @@ public class ExpectedHand {
 		}
 		normalize();
 	}
-	public double computeOdds(int c1,int c2){ //return 0-100
+	private double internalComputeOdds(int c1,int c2, PossibleHand[] phs,int plen, boolean six){
 		double result = 0.0, aggr = 0.0;
-		for(int i=0;i<len;i++){
-			if(hand[i].c2 == c1 || hand[i].c2 == c2)continue;
-			if(hand[i].c1 == c1 || hand[i].c1 == c2)continue;
-			aggr += hand[i].prob;
+		for(int i=0;i<plen;i++){
+			if(phs[i].c2 == c1 || phs[i].c2 == c2)continue;
+			if(phs[i].c1 == c1 || phs[i].c1 == c2)continue;
+			aggr += phs[i].prob;
 			if(common == 3){
-				result += HandEval.computeFlopEquityForSpecificCards(
-						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
-						new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] * hand[i].prob;
+				if(!six){
+					result += HandEval.computeFlopEquityForSpecificCards(
+							new int[]{c1,c2,phs[i].c1,phs[i].c2}, 
+							new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] * phs[i].prob;
+				}else{
+					result += HandSixEval.computeEstimatedFlopEquityForSpecificCards(
+							new int[]{c1,c2,phs[i].c1,phs[i].c2}, 
+							new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] * phs[i].prob;
+				}
 			}else if(common == 4){
 				result += HandEval.computeTurnEquityForSpecificCards(
-						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
-						new int[]{comCard[0],comCard[1],comCard[2],comCard[3]}, 2)[0] * hand[i].prob;
+						new int[]{c1,c2,phs[i].c1,phs[i].c2}, 
+						new int[]{comCard[0],comCard[1],comCard[2],comCard[3]}, 2)[0] * phs[i].prob;
 			}else if(common == 5){
 				result += HandEval.computeRiverEquityForSpecificCards(
-						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
-						comCard, 2)[0] * hand[i].prob;
+						new int[]{c1,c2,phs[i].c1,phs[i].c2}, 
+						comCard, 2)[0] * phs[i].prob;
 			}else{
-				/*result += HandEval.computePreFlopEquityForSpecificHoleCards(
-						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 2)[0] * hand[i].prob;*/
-				result += PreflopTable.getProb(c1, c2, hand[i].c1,hand[i].c2)*100*hand[i].prob;
+				/*result += phsEval.computePreFlopEquityForSpecificHoleCards(
+						new int[]{c1,c2,phs[i].c1,phs[i].c2}, 2)[0] * phs[i].prob;*/
+				result += PreflopTable.getProb(c1, c2, phs[i].c1,phs[i].c2)*100*phs[i].prob;
 			}
 		}		
 		return result/aggr;
 	}
+	public double computeOdds(int c1,int c2){
+		return internalComputeOdds(c1,c2,hand,len,false);		
+	}
 	public double computeOddsBySample(int c1,int c2,int iter){ //return 0-100
 		if(iter>=len)return computeOdds(c1,c2);
 		sample(iter);
-		double result = 0.0, aggr = 0.0;
-		for(int i=0;i<iter;i++){
-			if(sample[i].c2 == c1 || sample[i].c2 == c2)continue;
-			if(sample[i].c1 == c1 || sample[i].c1 == c2)continue;
-			aggr += 1.0/iter;
-			if(common == 3){
-				result += HandEval.computeFlopEquityForSpecificCards(
-						new int[]{c1,c2,sample[i].c1,sample[i].c2}, 
-						new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] / iter;
-			}else if(common == 4){
-				result += HandEval.computeTurnEquityForSpecificCards(
-						new int[]{c1,c2,sample[i].c1,sample[i].c2}, 
-						new int[]{comCard[0],comCard[1],comCard[2],comCard[3]}, 2)[0] / iter;
-			}else if(common == 5){
-				result += HandEval.computeRiverEquityForSpecificCards(
-						new int[]{c1,c2,sample[i].c1,sample[i].c2}, 
-						comCard, 2)[0] / iter;
-			}else{
-				/*result += sampleeval.computePreFlopEquityForSpecificHoleCards(
-						new int[]{c1,c2,sample[i].c1,sample[i].c2}, 2)[0] * sample[i].prob;*/
-				result += PreflopTable.getProb(c1, c2, sample[i].c1,sample[i].c2)*100/iter;
-			}
-		}		
-		return result/aggr;
+		return internalComputeOdds(c1,c2,sample,iter,false);
 	}
 	public void multiply(HandsProbability hp){
 		for(int i=0;i<len;i++){
@@ -292,25 +279,72 @@ public class ExpectedHand {
 		normalize();
 	}
 	public double computeSixCardOdds(int c1,int c2){ //return 0-100
+		return internalComputeOdds(c1,c2,hand,len,true);
+	}
+	public void shuffleGen(int iter){
+		for(int i=0;i<iter;i++)shuffle[i]=i;
+		for(int i=0;i<iter;i++){
+			int nxt = generator.nextInt(iter),tmp=shuffle[i];
+			 shuffle[i]=shuffle[nxt];
+			 shuffle[nxt]=tmp;
+		}
+	}
+	public double computeSixCardOdds3(int c1,int c2,ExpectedHand eh,int iter){
 		double result = 0.0, aggr = 0.0;
-		for(int i=0;i<len;i++){
-			if(hand[i].c2 == c1 || hand[i].c2 == c2)continue;
-			if(hand[i].c1 == c1 || hand[i].c1 == c2)continue;
-			if(hand[i].prob<EPS)continue;
-			aggr += hand[i].prob;
-			if(common == 3){
-				result += HandSixEval.computeEstimatedFlopEquityForSpecificCards(
-						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
-						new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] * hand[i].prob;
-			}
+		int size;
+		for(int round = 0; round<=(iter-1)/len; round++){
+			if(round!=(iter-1)/len)size = len;
+			else size = iter%len;
+			
+			sample(size);
+			eh.sample(size);
+			shuffleGen(size);
+			
+			for(int i=0;i<size;i++){
+				int s1 = sample[i].c1, s2 = sample[i].c2;
+				int e1 = eh.sample[shuffle[i]].c1, e2 = eh.sample[shuffle[i]].c2;
+				if( s2 == c1 || s2 == c2)continue;
+				if( s1 == c1 || s1 == c2)continue;
+				if( e2 == c1 || e2 == c2 || 
+						s1 == e2 || 
+						s2 == e2 )continue;
+				if(e1 == c1 || e1 == c2 || 
+						s1 == e1 || 
+						s2 == e1 )continue;
+				if(sample[i].prob<EPS)continue;
+				if(eh.sample[shuffle[i]].prob<EPS)continue;
+				
+				double prob = sample[i].prob*eh.sample[shuffle[i]].prob;
+				
+				aggr += prob;
+				if(common == 3){
+					result += HandSixEval.computeEstimatedFlopEquityForSpecificCards(
+							new int[]{c1,c2,s1,s2,e1,e2}, 
+							new int[]{comCard[0],comCard[1],comCard[2]}, 3)[0] * prob;
+				}else if(common == 4){
+					result += HandEval.computeTurnEquityForSpecificCards(
+							new int[]{c1,c2,s1,s2,e1,e2}, 
+							new int[]{comCard[0],comCard[1],comCard[2],comCard[3]}, 3)[0] * prob;
+				}else if(common == 5){
+					result += HandEval.computeRiverEquityForSpecificCards(
+							new int[]{c1,c2,s1,s2,e1,e2}, 
+							comCard, 3)[0] * prob;
+				}else{
+					/*result += handEval.computePreFlopEquityForSpecificHoleCards(
+							new int[]{c1,c2,hand[i].c1,hand[i].c2}, 2)[0] * hand[i].prob;*/
+					//result += PreflopTable.getProb(c1, c2, hand[i].c1,hand[i].c2)*100*hand[i].prob;
+				}
+			}		
 		}		
-		return result/aggr;
+		return result/aggr;		
 	}
 	public static void main(String[] args){
 		
 		long start = System.nanoTime();
 		for(int i=0;i<100;i++){
 			ExpectedHand eh = new ExpectedHand();
+			ExpectedHand eh2 = new ExpectedHand();
+			
 			eh.addCard(7);
 			eh.addCard(13);
 			eh.addCard(51);
@@ -321,8 +355,9 @@ public class ExpectedHand {
 			//for(int j=0;j<10;j++)System.out.println(eh.hand[j].c1+" "+eh.hand[j].c2);
 			eh.updatePosition();
 			//eh.reduce(100);
-			if(i==99)System.out.println(eh.computeOddsBySample(19,31,300));
-			System.out.println(eh.computeSixCardOdds(19, 31));
+			//System.out.println(eh.computeSixCardOdds(19,31));
+			System.out.println(eh.computeSixCardOdds3(12, 31, eh2, 200));
+			//System.out.println(eh.computeSixCardOdds(19, 31));
 		}
 		long end = System.nanoTime();
 		System.out.println((end-start)/1000000.0/100);
