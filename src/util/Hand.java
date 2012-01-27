@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import lib.FiveEval;
+
 public class Hand {
 	public boolean pocket = false;
 	public int flushSuit = -1;
@@ -44,145 +46,24 @@ public class Hand {
 		usedCards.add(c.toValue());
 	}
 
-	public void getBestHand() {
-		analyzeHand();
-		if (quadRank != -1) {
-			int highest = -1;
-			Card single = community.get(0);
-			for (Card c: community) {
-				if (c.r == quadRank) {
-					bestHand.add(c);
-				}
-				else if (c.r > highest) {
-					single = c;
-					highest = c.r;
-				}
-			}
-			bestHand.add(single);
-			bestCategory = Category.Quads;
-			return;
-		}
-		if (tripRank != -1 && pairRank1 != -1) {
-			for (Card c: community) {
-				if (c.r == tripRank || c.r == pairRank1) {
-					bestHand.add(c);
-				}
-			}
-			bestCategory = Category.FullHouse;
-			return;
-		}
-		if (flushSuit != -1) {
-			int highest = -1;
-			Card highCard;
-			for (Card c: community) {
-				if (c.s == flushSuit) {
-					bestHand.add(c);
-					if (c.r > highest) {
-						highCard = c;
-						highest = c.r;
-					}
-				}
-			}
-			int last = bestHand.size()-1;
-			while (bestHand.size() > 5) {
-				if (bestHand.get(last).r != highest)
-					bestHand.remove(last);
-				--last;
-			}
-			bestCategory = Category.Flush;
-			return;
-		}
-		if (straightLast != -1) {
-			for (Card c: community) {
-				if (c.r <= straightLast && c.r > straightLast - 5) {
-					bestHand.set(c.r, c);
-				}
-			}
-			bestCategory = Category.Straight;
-			return;
-		}
-		if (tripRank != -1) {
-			int h1 = -1, h2 = -1;
-			Card hc1, hc2;
-			for (Card c: community) {
-				if (c.r == tripRank) {
-					bestHand.add(c);
-				}
-				else {
-
-				}
-			}
-			bestCategory = Category.Triplets;
-			return;
-		}
-		if (pairRank1 != -1) {
-			if (pairRank2 != -1) {
-				bestCategory = Category.TwoPair;
-			} else {
-				bestCategory = Category.Pair;
-			}
-			return;
-		}
-	}
-
-	public void analyzeHand() {
-		if (flushSuit != -1) {
-			for (int i = 0; i < 4; ++i) {
-				if (suitCount[i] >= 5) {
-					flushSuit = i;
-					break;
-				}
-			}
-		}
-		int c = 0;
-		for (int i = 0; i < 13; ++i) {
-			if (rankCount[i] == 0)
-				c = 0;
-			else {
-				++c;
-				switch (rankCount[i]) {
-					case 4:
-						quadRank = i;
-						bestCategory = Category.Quads;
-						break;
-					case 3:
-						tripRank = i;
-						break;
-					case 2:
-						pairRank2 = pairRank1;
-						pairRank1 = i;
-						break;
-					case 1:
-						singRank = i;
-						break;
-				}
-			}
-			if (c >= 5) {
-				straightLast = i;
-				bestCategory = Category.Straight;
-			}
-		}
-	}
-	
-	public List<Card> analyzePossibleStraightFlush() {
-		List<Card> result = new ArrayList<Card>();
-		for (int i = 0; i < 4; i++) {
-			switch (suitCount[i]) {
-			case 5:
-				
-				break;
-			case 4:
-				
-				break;
+	public Category bestCategory() {
+		int rank;
+		switch (community.size()) {
 			case 3:
-				
-				break;
+				rank = FiveEval.getBestRankOf(hole[0].toValue(), hole[1].toValue(),
+					community.get(0).toValue(), community.get(1).toValue(), community.get(2).toValue());
+				return FiveEval.rankToCategory(rank);
+			case 4:
+				rank = FiveEval.getBestRankOf(hole[0].toValue(), hole[1].toValue(), community.get(0).toValue(),
+					community.get(1).toValue(), community.get(2).toValue(), community.get(3).toValue());
+				return FiveEval.rankToCategory(rank);
+			case 5:
+				rank = FiveEval.getBestRankOf(hole[0].toValue(), hole[1].toValue(), community.get(0).toValue(),
+					community.get(1).toValue(), community.get(2).toValue(), community.get(3).toValue(), community.get(4).toValue());
+				return FiveEval.rankToCategory(rank);
 			default:
-				continue;
-			}
+				return Category.Nothing;
 		}
-		
-		return result;
 	}
 	
 	public List<Card> analyzePossibleQuads() {
