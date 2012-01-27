@@ -4,10 +4,16 @@ import java.util.List;
 
 public class testHandAnalyze {
 	public static void main(String[] args) {
-		Hand h = new Hand(new Card("Qc"), new Card("Qd"));
-		h.addCards(new Card("7s"));
+		Hand h = new Hand(new Card("Js"), new Card("Qs"));
+		h.addCards(new Card("Ks"));
+		h.addCards(new Card("As"));
+		h.addCards(new Card("Ts"));
+		System.out.println("Best cat: " + h.bestCategory());
+		h = new Hand(new Card("4s"), new Card("5s"));
 		h.addCards(new Card("3s"));
-		h.addCards(new Card("3d"));
+		h.addCards(new Card("As"));
+		h.addCards(new Card("2s"));
+		System.out.println("Best cat: " + h.bestCategory());
 		
 		PokerTable.makeNormTable();
 		List<Card> cards = h.analyzePossibleFlush();

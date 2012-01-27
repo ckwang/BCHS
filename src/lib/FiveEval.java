@@ -190,8 +190,8 @@ public class FiveEval {
 				for (k = 2; k <= j - 1; k++) {
 					for (l = 1; l <= k - 1; l++) {
 						for (m = 0; m <= l - 1; m++) {
-							if (!(i - m == 4 || (i == 12 && j == 3 && k == 2
-									&& l == 1 && m == 0))) {
+							if (!(i - m == 4 || (i == 12 && j == 11 && k == 10
+									&& l == 9 && m == 0))) {
 								flushRankArray[faceflush[i] + faceflush[j]
 										+ faceflush[k] + faceflush[l]
 										+ faceflush[m]] = n;
@@ -226,8 +226,7 @@ public class FiveEval {
 		rankCategory[7] = n;
 
 		// low straight flush
-		flushRankArray[faceflush[0] + faceflush[12] + faceflush[11] +
-		               faceflush[10] + faceflush[9]] = n;
+		flushRankArray[faceflush[0] + faceflush[12] + faceflush[11] + faceflush[10] + faceflush[9]] = n;
 		n++;
 
 		// usual straight flush
