@@ -226,7 +226,8 @@ public class FiveEval {
 		rankCategory[7] = n;
 
 		// low straight flush
-		flushRankArray[face[0] + face[12] + face[11] + face[10] + face[9]] = n;
+		flushRankArray[faceflush[0] + faceflush[12] + faceflush[11] +
+		               faceflush[10] + faceflush[9]] = n;
 		n++;
 
 		// usual straight flush
