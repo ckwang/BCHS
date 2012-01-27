@@ -200,7 +200,7 @@ public class SevenEval {
 									+ faceFlush[k] + faceFlush[l]
 									+ faceFlush[m];
 
-							int rank = fiveEval.getRankOf(4 * i, 4 * j, 4 * k,
+							int rank = fiveEval.getBestRankOf(4 * i, 4 * j, 4 * k,
 									4 * l, 4 * m);
 
 							flushRankArray[key] = rank;
