@@ -296,9 +296,10 @@ public class ExpectedHand {
 		for(int i=0;i<len;i++){
 			if(hand[i].c2 == c1 || hand[i].c2 == c2)continue;
 			if(hand[i].c1 == c1 || hand[i].c1 == c2)continue;
+			if(hand[i].prob<EPS)continue;
 			aggr += hand[i].prob;
 			if(common == 3){
-				result += HandSixEval.computeSixCardFlopEquityForSpecificCards(
+				result += HandSixEval.computeEstimatedFlopEquityForSpecificCards(
 						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
 						new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] * hand[i].prob;
 			}
@@ -310,18 +311,18 @@ public class ExpectedHand {
 		long start = System.nanoTime();
 		for(int i=0;i<100;i++){
 			ExpectedHand eh = new ExpectedHand();
-			eh.addCard(5);
-			eh.addCard(10);
-			//eh.addCard(14);
-			eh.addCard(29);			
+			eh.addCard(7);
+			eh.addCard(13);
+			eh.addCard(51);
+			//eh.addCard(29);			
 			eh.updateRank();
 			//eh.updateDraw();
 			eh.sort();
 			//for(int j=0;j<10;j++)System.out.println(eh.hand[j].c1+" "+eh.hand[j].c2);
 			eh.updatePosition();
 			//eh.reduce(100);
-			if(i==99)System.out.println(eh.computeOddsBySample(0,17,300));
-			System.out.println(eh.computeSixCardOdds(0, 17));
+			if(i==99)System.out.println(eh.computeOddsBySample(19,31,300));
+			System.out.println(eh.computeSixCardOdds(19, 31));
 		}
 		long end = System.nanoTime();
 		System.out.println((end-start)/1000000.0/100);
