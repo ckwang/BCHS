@@ -93,7 +93,7 @@ public class ExpectedHand {
 	public void updateRank(){
 		if(common == 3){
 			for(int i=0;i<len;i++){
-				hand[i].rank = FiveEval.getRankOf(
+				hand[i].rank = FiveEval.getBestRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2]);
 			}
 		}else if(common == 4){

@@ -124,7 +124,7 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			if (actor.compareToIgnoreCase(leftName) == 0)
 				hasLeftFold = true;
-			else if (actor.compareToIgnoreCase(leftName) == 0)
+			else if (actor.compareToIgnoreCase(rightName) == 0)
 				hasRightFold = true;
 			result = new Action(Action.Type.FOLD, actor);
 		} else if (tokens[0].compareToIgnoreCase("RAISE") == 0) {
