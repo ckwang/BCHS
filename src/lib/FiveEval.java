@@ -32,7 +32,7 @@ import static lib.Constants.*;
 
 public class FiveEval {
 
-	public FiveEval() {
+	static {
 
 		initialiseDeck();
 		initialiseRanking();
@@ -41,16 +41,16 @@ public class FiveEval {
 	// Ranks for 5-card evaluation separated
 	// into non-flushes and flushes, each with
 	// their own respective keys
-	private int[] rankArray;
-	private int[] flushRankArray;
+	private static int[] rankArray;
+	private static int[] flushRankArray;
 
 	// Card face values beginning with ACE_ from
 	// index 0 and ending with TWO_ from index 48
-	private int[] deckcardsFace;
-	private int[] deckcardsFlush;
-	private int[] deckcardsSuit;
+	private static int[] deckcardsFace;
+	private static int[] deckcardsFlush;
+	private static int[] deckcardsSuit;
 
-	public void initialiseDeck() {
+	public static void initialiseDeck() {
 
 		deckcardsFace = new int[52];
 		deckcardsFlush = new int[52];
@@ -86,7 +86,7 @@ public class FiveEval {
 
 	}
 
-	public void initialiseRanking() {
+	public static void initialiseRanking() {
 
 		rankArray = new int[MAX_FIVE_NONFLUSH_KEY_INT + 1];
 		flushRankArray = new int[MAX_FLUSH_KEY_INT + 1];
@@ -232,7 +232,7 @@ public class FiveEval {
 		}
 	}
 
-	public int getRankOf(int CARD1, int CARD2, int CARD3, int CARD4, int CARD5) {
+	public static int getRankOf(int CARD1, int CARD2, int CARD3, int CARD4, int CARD5) {
 
 		if ((deckcardsSuit[CARD1] == deckcardsSuit[CARD2])
 				&& (deckcardsSuit[CARD1] == deckcardsSuit[CARD3])
@@ -251,7 +251,7 @@ public class FiveEval {
 		}
 	}
 
-	public int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4,
+	public static int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4,
 			int CARD5, int CARD6, int CARD7) {
 		int[] seven_cards = { CARD1, CARD2, CARD3, CARD4, CARD5, CARD6, CARD7 };
 		int[] five_temp = { CARD1, CARD2, CARD3, CARD4, CARD5 };
@@ -280,7 +280,7 @@ public class FiveEval {
 
 		return BEST_RANK_SO_FAR;
 	}
-	public int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4,
+	public static int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4,
 			int CARD5, int CARD6) {
 		int[] six_cards = { CARD1, CARD2, CARD3, CARD4, CARD5, CARD6};
 		int[] five_temp = { CARD1, CARD2, CARD3, CARD4, CARD5 };
@@ -288,7 +288,7 @@ public class FiveEval {
 		int BEST_RANK_SO_FAR = 0, CURRENT_RANK = 0;
 		int i, j, k, m;
 
-		for (i = 1; i < 6; i++) {
+		for (i = 0; i < 6; i++) {
 				m = 0;
 				for (k = 0; k < 6; k++) {
 					if (k != i) {
