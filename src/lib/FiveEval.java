@@ -29,11 +29,11 @@
 package lib;
 
 import static lib.Constants.*;
+import util.Category;
 
 public class FiveEval {
 
 	static {
-
 		initialiseDeck();
 		initialiseRanking();
 	}
@@ -50,8 +50,9 @@ public class FiveEval {
 	private static int[] deckcardsFlush;
 	private static int[] deckcardsSuit;
 
-	public static void initialiseDeck() {
+	private static int[] rankCategory;
 
+	public static void initialiseDeck() {
 		deckcardsFace = new int[52];
 		deckcardsFlush = new int[52];
 		deckcardsSuit = new int[52];
@@ -62,11 +63,9 @@ public class FiveEval {
 		int[] faceflush = { ACE_FLUSH, KING_FLUSH, QUEEN_FLUSH, JACK_FLUSH,
 				TEN_FLUSH, NINE_FLUSH, EIGHT_FLUSH, SEVEN_FLUSH, SIX_FLUSH,
 				FIVE_FLUSH, FOUR_FLUSH, THREE_FLUSH, TWO_FLUSH };
-
 		int n;
 
 		for (n = 0; n < 13; n++) {
-
 			deckcardsSuit[4 * n] = SPADE;
 			deckcardsSuit[4 * n + 1] = HEART;
 			deckcardsSuit[4 * n + 2] = DIAMOND;
@@ -81,15 +80,14 @@ public class FiveEval {
 			deckcardsFlush[4 * n + 1] = faceflush[n];
 			deckcardsFlush[4 * n + 2] = faceflush[n];
 			deckcardsFlush[4 * n + 3] = faceflush[n];
-
 		}
 
 	}
 
 	public static void initialiseRanking() {
-
 		rankArray = new int[MAX_FIVE_NONFLUSH_KEY_INT + 1];
 		flushRankArray = new int[MAX_FLUSH_KEY_INT + 1];
+		rankCategory = new int[9];
 
 		int[] face = { TWO_FIVE, THREE_FIVE, FOUR_FIVE, FIVE_FIVE, SIX_FIVE,
 				SEVEN_FIVE, EIGHT_FIVE, NINE_FIVE, TEN_FIVE, JACK_FIVE,
@@ -110,7 +108,7 @@ public class FiveEval {
 		for (i = 0; i < MAX_FLUSH_KEY_INT + 1; i++) {
 			flushRankArray[i] = 0;
 		}
-
+     
 		// high card
 		for (i = 5; i <= 12; i++) {
 			for (j = 3; j <= i - 1; j++) {
@@ -128,6 +126,7 @@ public class FiveEval {
 				}
 			}
 		}
+		rankCategory[0] = n;
 
 		// pair
 		for (i = 0; i <= 12; i++) {
@@ -143,6 +142,7 @@ public class FiveEval {
 				}
 			}
 		}
+		rankCategory[1] = n;
 
 		// 2pair
 		for (i = 1; i <= 12; i++) {
@@ -156,6 +156,7 @@ public class FiveEval {
 				}
 			}
 		}
+		rankCategory[2] = n;
 
 		// triple
 		for (i = 0; i <= 12; i++) {
@@ -169,9 +170,10 @@ public class FiveEval {
 				}
 			}
 		}
+		rankCategory[3] = n;
 
 		// low straight nonflush
-		rankArray[face[12] + face[0] + face[1] + face[2] + face[3]] = n;
+		rankArray[face[0] + face[12] + face[11] + face[10] + face[9]] = n;
 		n++;
 
 		// usual straight nonflush
@@ -180,6 +182,7 @@ public class FiveEval {
 					+ face[i + 4]] = n;
 			n++;
 		}
+		rankCategory[4] = n;
 
 		// flush not a straight
 		for (i = 5; i <= 12; i++) {
@@ -187,8 +190,8 @@ public class FiveEval {
 				for (k = 2; k <= j - 1; k++) {
 					for (l = 1; l <= k - 1; l++) {
 						for (m = 0; m <= l - 1; m++) {
-							if (!(i - m == 4 || (i == 12 && j == 3 && k == 2
-									&& l == 1 && m == 0))) {
+							if (!(i - m == 4 || (i == 12 && j == 11 && k == 10
+									&& l == 9 && m == 0))) {
 								flushRankArray[faceflush[i] + faceflush[j]
 										+ faceflush[k] + faceflush[l]
 										+ faceflush[m]] = n;
@@ -199,6 +202,7 @@ public class FiveEval {
 				}
 			}
 		}
+		rankCategory[5] = n;
 
 		// full house
 		for (i = 0; i <= 12; i++)
@@ -208,6 +212,7 @@ public class FiveEval {
 					n++;
 				}
 			}
+		rankCategory[6] = n;
 
 		// quad
 		for (i = 0; i <= 12; i++) {
@@ -218,10 +223,10 @@ public class FiveEval {
 				}
 			}
 		}
+		rankCategory[7] = n;
 
 		// low straight flush
-		flushRankArray[faceflush[0] + faceflush[1] + faceflush[2]
-				+ faceflush[3] + faceflush[12]] = n;
+		flushRankArray[faceflush[0] + faceflush[12] + faceflush[11] + faceflush[10] + faceflush[9]] = n;
 		n++;
 
 		// usual straight flush
@@ -230,9 +235,50 @@ public class FiveEval {
 					+ faceflush[i + 3] + faceflush[i + 4]] = n;
 			n++;
 		}
+		rankCategory[8] = n;
 	}
 
-	public static int getRankOf(int CARD1, int CARD2, int CARD3, int CARD4, int CARD5) {
+	public static Category rankToCategory(int r) {
+		assert r > 0 && r < 7463;
+		int i = 0;
+		while (r >= rankCategory[i] && i < 8)
+			++i;
+
+		Category result = Category.Nothing;
+		switch (i) {
+			case 0:
+				result = Category.Nothing;
+				break;
+			case 1:
+				result = Category.Pair;
+				break;
+			case 2:
+				result = Category.TwoPair;
+				break;
+			case 3:
+				result = Category.Triplets;
+				break;
+			case 4:
+				result = Category.Straight;
+				break;
+			case 5:
+				result = Category.Flush;
+				break;
+			case 6:
+				result = Category.FullHouse;
+				break;
+			case 7:
+				result = Category.Quads;
+				break;
+			case 8:
+				result = Category.StraightFlush;
+				break;
+		}
+		return result;
+	}
+
+	// 5 cards best rank
+	public static int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4, int CARD5) {
 
 		if ((deckcardsSuit[CARD1] == deckcardsSuit[CARD2])
 				&& (deckcardsSuit[CARD1] == deckcardsSuit[CARD3])
@@ -251,6 +297,7 @@ public class FiveEval {
 		}
 	}
 
+	// 7 cards best rank
 	public static int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4,
 			int CARD5, int CARD6, int CARD7) {
 		int[] seven_cards = { CARD1, CARD2, CARD3, CARD4, CARD5, CARD6, CARD7 };
@@ -269,17 +316,18 @@ public class FiveEval {
 					}
 				}
 
-				CURRENT_RANK = getRankOf(five_temp[0], five_temp[1],
+				CURRENT_RANK = getBestRankOf(five_temp[0], five_temp[1],
 						five_temp[2], five_temp[3], five_temp[4]);
 
-				if (BEST_RANK_SO_FAR < CURRENT_RANK) {
+				if (BEST_RANK_SO_FAR < CURRENT_RANK)
 					BEST_RANK_SO_FAR = CURRENT_RANK;
-				}
 			}
 		}
 
 		return BEST_RANK_SO_FAR;
 	}
+
+	// 6 cards best rank
 	public static int getBestRankOf(int CARD1, int CARD2, int CARD3, int CARD4,
 			int CARD5, int CARD6) {
 		int[] six_cards = { CARD1, CARD2, CARD3, CARD4, CARD5, CARD6};
@@ -297,12 +345,11 @@ public class FiveEval {
 					}
 				}
 
-				CURRENT_RANK = getRankOf(five_temp[0], five_temp[1],
+				CURRENT_RANK = getBestRankOf(five_temp[0], five_temp[1],
 						five_temp[2], five_temp[3], five_temp[4]);
 
-				if (BEST_RANK_SO_FAR < CURRENT_RANK) {
+				if (BEST_RANK_SO_FAR < CURRENT_RANK)
 					BEST_RANK_SO_FAR = CURRENT_RANK;
-				}
 		}
 
 		return BEST_RANK_SO_FAR;

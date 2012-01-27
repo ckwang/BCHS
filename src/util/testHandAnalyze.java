@@ -7,10 +7,16 @@ import java.util.Random;
 
 public class testHandAnalyze {
 	public static void main(String[] args) {
-		Hand h = new Hand(new Card("Ac"), new Card("Ad"));
-		h.addCards(new Card("7s"));
+		Hand h = new Hand(new Card("Js"), new Card("Qs"));
+		h.addCards(new Card("Ks"));
+		h.addCards(new Card("As"));
+		h.addCards(new Card("Ts"));
+		System.out.println("Best cat: " + h.bestCategory());
+		h = new Hand(new Card("4s"), new Card("5s"));
 		h.addCards(new Card("3s"));
-		h.addCards(new Card("3d"));
+		h.addCards(new Card("As"));
+		h.addCards(new Card("2s"));
+		System.out.println("Best cat: " + h.bestCategory());
 		
 		PokerTable.makeNormTable();
 		List<Card> cards = h.analyzePossibleFlush();
@@ -38,7 +44,7 @@ public class testHandAnalyze {
 		
 		// Monte Carlo p1
 		start = System.nanoTime();
-		int rank_our = e.getRankOf(h.hole[0].toLibValue(), h.hole[1].toLibValue(),
+		int rank_our = FiveEval.getBestRankOf(h.hole[0].toLibValue(), h.hole[1].toLibValue(),
 				h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
 		
 		int win_count = 0;
@@ -54,7 +60,7 @@ public class testHandAnalyze {
 			int c1_lib = new Card(c1).toLibValue();
 			int c2_lib = new Card(c2).toLibValue();
 			
-			int rank_opp = e.getRankOf(c1_lib, c2_lib,
+			int rank_opp = FiveEval.getBestRankOf(c1_lib, c2_lib,
 				h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
 			
 			if (rank_opp > rank_our)	win_count++;

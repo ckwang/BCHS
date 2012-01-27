@@ -6,6 +6,7 @@ import java.util.Random;
 
 import lib.HandEval;
 import lib.FiveEval;
+import lib.HandSixEval;
 
 public class ExpectedHand {
 	public static double drawTh = 0.1;
@@ -93,7 +94,7 @@ public class ExpectedHand {
 	public void updateRank(){
 		if(common == 3){
 			for(int i=0;i<len;i++){
-				hand[i].rank = FiveEval.getRankOf(
+				hand[i].rank = FiveEval.getBestRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2]);
 			}
 		}else if(common == 4){
@@ -126,8 +127,15 @@ public class ExpectedHand {
 		}
 	}
 	public void updateDraw(){
+		int goodpos = 0;
 		for(int i=0;i<len;i++){
-			hand[i].draw=0;
+			hand[i].draw = 0;
+		}
+		for(int i=0;i<len-1;i++){
+			if(hand[i].position<drawTh&&hand[i+1].position+EPS>=drawTh){
+				goodpos = i;
+				break;
+			}
 		}
 		for(int c=0;c<51;c++){
 			boolean flag=false;
@@ -135,37 +143,29 @@ public class ExpectedHand {
 				if(comCard[i]==c)flag=true;
 			}
 			if(flag)continue;
-			for(int i=0;i<len;i++){
-				tmphand[i].ph=hand[i];
-				if(hand[i].c1==c||hand[i].c2==c||hand[i].prob<EPS){
-					tmphand[i].rank = -1;
-					continue;
-				}
-				if(common==3){
-					//System.out.println(tmphand[i].ph.c1+" "+tmphand[i].ph.c2+" "+comCard[0]+" "+comCard[1]+" "+comCard[2]+" "+c);
-					tmphand[i].rank = FiveEval.getBestRankOf(tmphand[i].ph.c1, tmphand[i].ph.c2,
-							comCard[0], comCard[1], comCard[2], c);
-				}else if(common==4){
-					tmphand[i].rank = FiveEval.getBestRankOf(tmphand[i].ph.c1, tmphand[i].ph.c2,
-							comCard[0], comCard[1], comCard[2], comCard[3], c);
-				}
-			}
-			Arrays.sort(tmphand, 0, len);
 			
-			int start = 0;
-			double current = 0.0;
-			double step = 0.0;
+			PossibleHand good = hand[0];
+			for(int i=goodpos;i<len;i++){
+				if(hand[i].c1==c||hand[i].c2==c||hand[i].prob<EPS)continue;
+				good=hand[i];
+			}
+			int goodrank = FiveEval.getBestRankOf(good.c1, good.c2,
+					comCard[0], comCard[1], comCard[2], c);
 			for(int i=0;i<len;i++){
-				step+=tmphand[i].ph.prob;
-				if(i==len-1||tmphand[i].ph.rank!=tmphand[i+1].ph.rank){
-					for(int j=start;j<=i;j++){
-						if(current+step/2<drawTh){
-							tmphand[i].ph.draw++;
-						}
+				int drawrank = 0;
+				if(hand[i].c1==c||hand[i].c2==c||hand[i].prob<EPS){
+					drawrank = -1;
+				}else{
+					if(common==3){
+						drawrank = FiveEval.getBestRankOf(hand[i].c1, hand[i].c2,
+								comCard[0], comCard[1], comCard[2], c);
+					}else if(common==4){
+						drawrank = FiveEval.getBestRankOf(hand[i].c1, hand[i].c2,
+								comCard[0], comCard[1], comCard[2], comCard[3], c);
 					}
-					current+=step;
-					step = 0.0;
-					start = i+1;
+				}
+				if(drawrank>goodrank){
+					hand[i].draw++;
 				}
 			}
 		}
@@ -291,6 +291,20 @@ public class ExpectedHand {
 		}
 		normalize();
 	}
+	public double computeSixCardOdds(int c1,int c2){ //return 0-100
+		double result = 0.0, aggr = 0.0;
+		for(int i=0;i<len;i++){
+			if(hand[i].c2 == c1 || hand[i].c2 == c2)continue;
+			if(hand[i].c1 == c1 || hand[i].c1 == c2)continue;
+			aggr += hand[i].prob;
+			if(common == 3){
+				result += HandSixEval.computeSixCardFlopEquityForSpecificCards(
+						new int[]{c1,c2,hand[i].c1,hand[i].c2}, 
+						new int[]{comCard[0],comCard[1],comCard[2]}, 2)[0] * hand[i].prob;
+			}
+		}		
+		return result/aggr;
+	}
 	public static void main(String[] args){
 		
 		long start = System.nanoTime();
@@ -298,15 +312,18 @@ public class ExpectedHand {
 			ExpectedHand eh = new ExpectedHand();
 			eh.addCard(5);
 			eh.addCard(10);
-			eh.addCard(14);
-			//eh.addCard(29);			
+			//eh.addCard(14);
+			eh.addCard(29);			
 			eh.updateRank();
 			//eh.updateDraw();
 			eh.sort();
 			//for(int j=0;j<10;j++)System.out.println(eh.hand[j].c1+" "+eh.hand[j].c2);
 			eh.updatePosition();
 			//eh.reduce(100);
-			System.out.println(eh.computeOddsBySample(0,17,300));
+//			if(i==99)System.out.println(eh.computeOddsBySample(0,17,300));
+//			System.out.println(eh.computeSixCardOdds(0, 17));
+			if(i==99)	eh.computeOddsBySample(0,17,300);
+			eh.computeSixCardOdds(0, 17);
 		}
 		long end = System.nanoTime();
 		System.out.println((end-start)/1000000.0/100);
