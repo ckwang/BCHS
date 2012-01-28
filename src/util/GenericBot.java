@@ -135,6 +135,7 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			potSize += amount;
+			toCall = amount;
 			result = new Action(Action.Type.BET, actor, amount);
 			if (actor.compareToIgnoreCase(leftName) == 0)
 				leftStack -= amount;
@@ -171,6 +172,7 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			potSize += amount;
+			toCall = amount;
 			result = new Action(Action.Type.RAISE, actor, amount);
 			if (actor.compareToIgnoreCase(leftName) == 0)
 				leftStack -= amount;
@@ -182,6 +184,7 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			potSize += amount;
+			toCall = amount;
 			result = new Action(Action.Type.POST, actor, amount);
 			if (actor.compareToIgnoreCase(leftName) == 0)
 				leftStack -= amount;
@@ -193,7 +196,12 @@ public abstract class GenericBot {
 			result = new Action(Action.Type.REFUND, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("SHOW") == 0) {
 			String actor = tokens[1];
-			result = new Action(Action.Type.SHOW, actor);
+			String[] hand = tokens[2].split(" ");
+			Card c1 = new Card(hand[0]);
+			Card c2 = new Card(hand[1]);
+			int pairValue = Card.pairToValue(c1.toLibValue(), c2.toLibValue());
+			result = new Action(Action.Type.SHOW, actor, pairValue);
+			handleShow(result);
 		} else if (tokens[0].compareToIgnoreCase("TIE") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
@@ -262,6 +270,7 @@ public abstract class GenericBot {
 	protected void reset_variables() {
 		canCheck = false;
 		canCall = false;
+		toCall = -1;
 		toBet = -1;
 		toRaise = -1;
 		leftAction = null;
@@ -287,4 +296,6 @@ public abstract class GenericBot {
 	public abstract String flop_computation();
 	public abstract String turn_computation();
 	public abstract String river_computation();
+
+	public abstract void handleShow(Action a);
 }
