@@ -113,6 +113,8 @@ public abstract class GenericBot {
 			timeBank = Double.parseDouble(tokens[5 + (numBoardCards > 0 ? 1 : 0) +
 					(numLastActions > 0 ? 1 : 0) +
 					(numLegalActions > 0 ? 1 : 0)]);
+			
+			System.out.println("Time bank: " + timeBank);
 
 			if (leftAction != null)
 				System.out.println("Left action: " + leftAction);
