@@ -65,8 +65,8 @@ public class Hand {
 				return Category.Nothing;
 		}
 	}
-	
-	public List<Card> analyzePossibleQuads() {
+
+	public List<Card> analyzePossibleQuads(Set<Integer> set) {
 		List<Card> result = new ArrayList<Card>();
 		for (int i = 0; i < 13; i++) {
 			boolean[] suit = new boolean[4];
@@ -75,7 +75,6 @@ public class Hand {
 					suit[c.s] = true;
 				} 
 			}
-			
 			switch (rankCount[i]) {
 			case 4:
 				// TODO: add the case for 4 cards with same rank
@@ -90,25 +89,33 @@ public class Hand {
 						if (usedCards.contains(k) || k == first)	continue;
 						result.add(new Card(j, i));
 						result.add(new Card(k));
+						set.add(Card.pairToValue(k, Card.toValue(j, i)));
 					}
 				}
 				break;
 			case 2:
 				if (hole[0].r == i || hole[1].r ==i)	break;
-				
+				int c1 = -1, c2 = -1;
 				for (int j = 0; j < 4; j++) {
 					if (suit[j])	continue;
 					result.add(new Card(j, i));
-				} break;
+					if (c1 == -1)
+						c1 = Card.toValue(j, i);
+					else
+						c2 = Card.toValue(j, i);
+				} 
+				assert c1 != -1 && c2 != -1;
+
+				set.add(Card.pairToValue(c1, c2));
+				break;
 			default:
 				continue;
 			}			
 		}
-		
 		return result;
 	}
 
-	public List<Card> analyzePossibleFullHouse() {
+	public List<Card> analyzePossibleFullHouse(Set<Integer> set) {
 		List<Card> result = new ArrayList<Card>();
 		for (int i = 0; i < 13; i++) {	// long
 			for (int j = 0; j < 13; j++) {	// short
@@ -121,40 +128,34 @@ public class Hand {
 				case 1:
 					if (necessaryLong == 1) {	// need 1 long
 						boolean[] usedSuit = new boolean[4]; 
-						
 						for (Card c : community) {
 							if (c.r == i)	usedSuit[c.s] = true;
 						}
-						
 						for (int k = 0; k < 4; k++) {
 							if (usedSuit[k])	continue;
 							int first = Card.toValue(k, i);
 							if (usedCards.contains(first))	continue;
-							
 							for (int w = 0; w < 52; w++) {
 								if (usedCards.contains(w) || Card.valueToRank(w) == i)	continue;
-								
 								result.add(new Card(first));
 								result.add(new Card(w));
+								set.add(Card.pairToValue(first, w));
 							}
 						}
 					} else {	// need 1 short
 						boolean[] usedSuit = new boolean[4]; 
-						
 						for (Card c : community) {
 							if (c.r == j)	usedSuit[c.s] = true;
 						}
-						
 						for (int k = 0; k < 4; k++) {
 							if (usedSuit[k])	continue;
 							int first = Card.toValue(k, j);
 							if (usedCards.contains(first))	continue;
-							
 							for (int w = 0; w < 52; w++) {
 								if (usedCards.contains(w) || Card.valueToRank(w) == j)	continue;
-								
 								result.add(new Card(first));
 								result.add(new Card(w));
+								set.add(Card.pairToValue(first, w));
 							}
 						}
 					}
@@ -179,6 +180,7 @@ public class Hand {
 								
 								result.add(new Card(first));
 								result.add(new Card(second));
+								set.add(Card.pairToValue(first, second));
 							}
 						}
 						
@@ -204,6 +206,7 @@ public class Hand {
 								
 								result.add(new Card(first));
 								result.add(new Card(second));
+								set.add(Card.pairToValue(first, second));
 							}
 						}
 						
@@ -226,6 +229,7 @@ public class Hand {
 								
 								result.add(new Card(first));
 								result.add(new Card(second));
+								set.add(Card.pairToValue(first, second));
 							}
 						}
 						
@@ -240,7 +244,7 @@ public class Hand {
 		return result;
 	}
 
-	public List<Card> analyzePossibleFlush() {
+	public List<Card> analyzePossibleFlush(Set<Integer> set) {
 		List<Card> result = new ArrayList<Card>();
 		for (int i = 0; i < 4; i++) {	
 			switch (suitCount[i]) {
@@ -254,6 +258,7 @@ public class Hand {
 						if (usedCards.contains(Card.toValue(i, k)) || k == Card.toValue(i, j))	continue;
 						result.add(new Card(i, j));
 						result.add(new Card(k));
+						set.add(Card.pairToValue(k, Card.toValue(i, j)));
 					}
 				}
 				break;
@@ -264,6 +269,7 @@ public class Hand {
 						if (usedCards.contains(Card.toValue(i, k)))	continue;
 						result.add(new Card(i, j));
 						result.add(new Card(i, k));
+						set.add(Card.pairToValue(Card.toValue(i, k), Card.toValue(i, j)));
 					}
 				}
 				break;
@@ -275,7 +281,7 @@ public class Hand {
 		return result;
 	}
 
-	public List<Card> analyzePossibleStraight() {
+	public List<Card> analyzePossibleStraight(Set<Integer> set) {
 		List<Card> result = new ArrayList<Card>();
 		// A2345
 		{
@@ -310,6 +316,7 @@ public class Hand {
 						if (usedCards.contains(k) || k == Card.toValue(j, rank))	continue;
 						result.add(new Card(j, rank));
 						result.add(new Card(k));
+						set.add(Card.pairToValue(k, Card.toValue(rank, j)));
 					}
 				}
 				
@@ -332,6 +339,7 @@ public class Hand {
 						if (usedCards.contains(Card.toValue(k, rank2)))	continue;
 						result.add(new Card(j, rank1));
 						result.add(new Card(k, rank2));
+						set.add(Card.pairToValue(Card.toValue(k, rank2), Card.toValue(j, rank1)));
 					}
 				}
 				
@@ -371,6 +379,7 @@ public class Hand {
 						if (usedCards.contains(k) || k == Card.toValue(j, rank))	continue;
 						result.add(new Card(j, rank));
 						result.add(new Card(k));
+						set.add(Card.pairToValue(k, Card.toValue(j, rank)));
 					}
 				}
 				
@@ -393,6 +402,7 @@ public class Hand {
 						if (usedCards.contains(Card.toValue(k, rank2)))	continue;
 						result.add(new Card(j, rank1));
 						result.add(new Card(k, rank2));
+						set.add(Card.pairToValue(Card.toValue(k, rank2), Card.toValue(j, rank1)));
 					}
 				}
 				
@@ -432,51 +442,104 @@ public class Hand {
 //		
 //	}
 
-	public List<Card> analyzePossibleTriplet() {
+	public List<Card> analyzePossibleTriplet(Set<Integer> set) {
 		List<Card> result = new ArrayList<Card>();
+		Card c1, c2, c3;
 		for (int i = 0; i < 13; ++i ) {
 			if (rankCount[i] == 1) {
-				result.add(new Card(-1, i));
-				result.add(new Card(-1, i));
+				for (int j = 0; j < 4; ++j) {
+					if (usedCards.contains(Card.toValue(j, i))) {
+						c1 = new Card((j+1)%4, i);
+						c2 = new Card((j+2)%4, i);
+						c3 = new Card((j+3)%4, i);
+						result.add(c1);
+						result.add(c2);
+						set.add(Card.pairToValue(c1.toValue(), c2.toValue()));
+						result.add(c2);
+						result.add(c3);
+						set.add(Card.pairToValue(c2.toValue(), c3.toValue()));
+						result.add(c1);
+						result.add(c3);
+						set.add(Card.pairToValue(c1.toValue(), c3.toValue()));
+					}
+				}
 			}
 			else if (rankCount[i] == 2) {
-				result.add(new Card(-1, i));
-				result.add(new Card(-1, -1));
+				int rank;
+				for (int j = 0; j < 4; ++j) {
+					if (usedCards.contains(Card.toValue(j, i)))
+						continue;
+					for (int k = 0; k < 52; ++k) {
+						rank = Card.valueToRank(k);
+						if (rankCount[rank] != 0) continue;
+						if (!usedCards.contains(k) && rank != i) {
+							result.add(new Card(j, i));
+							result.add(new Card(k));
+							set.add(Card.pairToValue(k, Card.toValue(j, i)));
+						}
+					}
+				}
 			}
-			else if (rankCount[i] >= 3) {
+			else if (rankCount[i] >= 3)
 				return null;
-			}
 		}
 		return result;
 	}
 	
-	// have not eliminate possibilities of getting full house or triplets
-	public List<Card> analyzePossibleTwoPairs() {
+	public List<Card> analyzePossibleTwoPair(Set<Integer> set) {
 		List<Card> result = new ArrayList<Card>();
 		List<Integer> pairs = new ArrayList<Integer>();
 		List<Integer> singles = new ArrayList<Integer>();
+		int numpairs = 0;
+		boolean abovetrip = false;
 		for (int i = 0; i < 13; ++i ) {
 			if (rankCount[i] == 1) {
 				singles.add(i);
 			}
-			else if (rankCount[i] >= 2) {
+			else if (rankCount[i] == 2) {
 				pairs.add(i);
+			}
+			else if (rankCount[i] == 3) {
+				return null;
 			}
 		}
 		if (pairs.size() >= 2)
 			return null;
 		if (singles.size() > 1) {
+			Card c1, c2;
 			for (int i = 1; i < singles.size(); ++i) {
-				for (int j = 0; j < i; ++j) {
-					result.add(new Card(-1, singles.get(i)));
-					result.add(new Card(-1, singles.get(j)));
+				for (int j = 0; j < 4; ++j) {
+					if (usedCards.contains(Card.toValue(j, singles.get(i)))) continue;
+					for (int k = 0; k < i; ++k) {
+						for (int l = 0; l < 4; ++l) {
+							if (usedCards.contains(Card.toValue(l, singles.get(k)))) continue;
+							c1 = new Card(j, singles.get(i));
+							c2 = new Card(l, singles.get(k));
+							result.add(c1);
+							result.add(c2);
+							set.add(Card.pairToValue(c1.toValue(), c2.toValue()));
+						}
+					}
 				}
 			}
 		}
 		if (pairs.size() == 1) {
+			int rank;
 			for (int i: singles) {
-				result.add(new Card(-1, i));
-				result.add(new Card(-1, -1));
+				for (int j = 0; j < 4; ++j) {
+					if (usedCards.contains(Card.toValue(j, i)))
+						continue;
+					for (int k = 0; k < 52; ++k) {
+						rank = Card.valueToRank(k);
+						if (singles.contains(rank) || rank == pairs.get(0))
+							continue;
+						if (usedCards.contains(k) || rank == i)
+							continue;
+						result.add(new Card(j, i));
+						result.add(new Card(k));
+						set.add(Card.pairToValue(Card.toValue(j, i), k));
+					}
+				}
 			}
 		}
 		return result;

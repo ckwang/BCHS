@@ -102,12 +102,19 @@ public class Card {
 		default:
 			ns = s;
 		}
-		
 		return nr*4 + ns;
 	}
 	
 	public int toValue() {
 		return r*4 + s;
+	}
+
+	public static int pairToValue(int c1, int c2) {
+		assert c1 != c2;
+		if (c1 > c2)
+			return c2*52 + c1;
+		else
+			return c1*52 + c2;
 	}
 	
 	@Override

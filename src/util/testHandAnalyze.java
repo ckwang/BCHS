@@ -1,6 +1,8 @@
 package util;
 
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 import lib.FiveEval;
 import java.util.Random;
@@ -8,33 +10,29 @@ import java.util.Random;
 public class testHandAnalyze {
 	public static void main(String[] args) {
 		Hand h = new Hand(new Card("Js"), new Card("Qs"));
-		h.addCards(new Card("Ks"));
-		h.addCards(new Card("As"));
+		h.addCards(new Card("Kd"));
+		h.addCards(new Card("Kh"));
 		h.addCards(new Card("Ts"));
-		System.out.println("Best cat: " + h.bestCategory());
-		h = new Hand(new Card("4s"), new Card("5s"));
-		h.addCards(new Card("3s"));
-		h.addCards(new Card("As"));
-		h.addCards(new Card("2s"));
-		System.out.println("Best cat: " + h.bestCategory());
+		h.addCards(new Card("5s"));
+		Set<Integer> s = new HashSet<Integer>();
 		
 		PokerTable.makeNormTable();
-		List<Card> cards = h.analyzePossibleFlush();
+		List<Card> cards = h.analyzePossibleFlush(s);
 		PokerTable.assignProb2(cards, 0.5);
 		
 		long start = System.nanoTime();
 //		for (int i = 0; i < 100; i++) {
-		List<Card> quadHands = h.analyzePossibleQuads();
-		List<Card> fullhouseHands = h.analyzePossibleFullHouse();
-		List<Card> flushHands = h.analyzePossibleFlush();
-		List<Card> straightHands = h.analyzePossibleStraight();
-		List<Card> tripletHands = h.analyzePossibleTriplet();
-		List<Card> twoPairHands = h.analyzePossibleTwoPairs();
+		List<Card> quadHands = h.analyzePossibleQuads(s);
+		List<Card> fullhouseHands = h.analyzePossibleFullHouse(s);
+		List<Card> flushHands = h.analyzePossibleFlush(s);
+		List<Card> straightHands = h.analyzePossibleStraight(s);
+		List<Card> tripletsHands = h.analyzePossibleTriplet(s);
+		List<Card> twoPairHands = h.analyzePossibleTwoPair(s);
 		List<Double> quadProbs = PokerTable.assignProb2(quadHands, 0.5);
 		List<Double> fullhouseProbs = PokerTable.assignProb2(fullhouseHands, 0.5);
 		List<Double> flushProbs = PokerTable.assignProb2(flushHands, 0.5);
 		List<Double> straightProbs = PokerTable.assignProb2(straightHands, 0.5);
-		List<Double> tripletProbs = PokerTable.assignProb2(tripletHands, 0.5);
+		List<Double> tripletProbs = PokerTable.assignProb2(tripletsHands, 0.5);
 		List<Double> twoPairProbs = PokerTable.assignProb2(twoPairHands, 0.5);
 //		}
 		long end = System.nanoTime();
