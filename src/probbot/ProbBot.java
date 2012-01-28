@@ -54,6 +54,39 @@ class ProbBot extends GenericBot {
 		return eh1.multiply(new HP());
 	}
 	
+	private double EVForRaise(double winningPr, double raiseRate) {
+		double raiseEV;
+		ExpectedHand myEHFuture = myEH.clone();
+		if (hasLeftFold) {
+			double rightCallPr = updateEH2(myEHFuture, rightEH, (int) (potSize * (1 + raiseRate)),
+					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
+			raiseEV = rightCallPr * (winningPr * (potSize + (potSize + toCall) * raiseRate) -
+					(1 - winningPr) * ((potSize + toCall) * raiseRate + toCall)) + (1 - rightCallPr) * potSize;
+		} else if (hasRightFold) {
+			double leftCallPr = updateEH2(myEHFuture, leftEH, (int) (potSize * (1 + raiseRate)),
+					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
+			raiseEV = leftCallPr * (winningPr * (potSize + (potSize + toCall) * raiseRate) -
+					(1 - winningPr) * ((potSize + toCall) * raiseRate + toCall)) + (1 - leftCallPr) * potSize;
+		} else {
+			int myPot = stackSize - myStack;
+			int leftPot = stackSize - leftStack;
+			int rightPot = stackSize - rightStack;
+			
+			int r = (int) ((2*rightPot + leftPot) * (1 + raiseRate) - myPot);
+			
+			double leftCallPr = updateEH3(myEHFuture, leftEH, rightEH, potSize + r,
+					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
+			double rightCallPr = updateEH3(myEHFuture, rightEH, leftEH, potSize + r,
+					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
+
+			raiseEV = leftCallPr * rightCallPr * (winningPr * (3 * (myPot + r) - r - leftPot - rightPot) - (1 - winningPr) * r) +
+			((1 - leftCallPr) * rightCallPr + leftCallPr * (1 - rightCallPr)) * (winningPr * (2 * (myPot + r) - r - leftPot - rightPot) - (1 - winningPr) * r) +
+			(1 - leftCallPr) * (1 - rightCallPr) * (myPot + leftPot + rightPot);
+		}
+		
+		return raiseEV;
+	}
+	
 	public void reactToAction(Action action) {
 		switch (action.type) {
 		case DEAL:
@@ -152,105 +185,73 @@ class ProbBot extends GenericBot {
 
 	@Override
 	public String flop_computation() {		
-//		// update left eh
-//		if (!hasLeftFold) {
-//			if (!hasFlop) {
-//				if (position == 0) {
-//					leftEH.addCard(myHand.community.get(0).toLibValue());
-//					leftEH.addCard(myHand.community.get(1).toLibValue());
-//					leftEH.addCard(myHand.community.get(2).toLibValue());
-//				}
-//			}
-//			
-//			if (rightAction != null) {	// right hasn't fold at that point
-//				updateEH3(leftEH, myEH, rightEH, leftAction);
-//			} else {
-//				updateEH2(leftEH, myEH, leftAction);
-//			}
-//		}
-//		
-//		// update right eh
-//		if (!hasRightFold) {
-//			if (!hasFlop) {
-//				if (position == 0 || position == 2) {
-//					rightEH.addCard(myHand.community.get(0).toLibValue());
-//					rightEH.addCard(myHand.community.get(1).toLibValue());
-//					rightEH.addCard(myHand.community.get(2).toLibValue());
-//				}
-//			}
-//			
-//			if (!hasLeftFold) {	// left hasn't fold at that point
-//				updateEH3(rightEH, myEH, leftEH, rightAction);
-//			} else {
-//				updateEH2(rightEH, myEH, rightAction);
-//			}
-//		}
-		
-		Action nextAction = null;
 		int c1 = myHand.hole[0].toLibValue();
 		int c2 = myHand.hole[1].toLibValue();
 		double winningPr = ExpectedHand.computeSixCardOdds3(c1, c2, leftEH, rightEH, 100);
 		
 		
-		final int SMALL_RAISE = 5;
-		final int MEDIUM_RAISE = 5;
-		final int BIG_RAISE = 5;
+		final double SMALL_RAISE = 0.5;
+		final double MEDIUM_RAISE = 1;
+		final double BIG_RAISE = 3;
+		
+		
+		double[] decisionEV = new double[5];
 		
 		// call
-		double callEV = canCall ? (winningPr * (potSize + toCall) - toCall) : -stackSize;
+		decisionEV[0] = canCall ? (winningPr * (potSize + toCall) - toCall) : -stackSize;
+		
+		// check
+		decisionEV[1] = !canCall ? (winningPr * potSize) : -stackSize;
 		
 		// raise small
-		double raiseSmallEV;
-		ExpectedHand myEHFuture = myEH.clone();
-		if (hasLeftFold) {
-			double rightCallPr = updateEH2(myEHFuture, rightEH, potSize * (1 + SMALL_RAISE),
-					new Action(Action.Type.CALL, potSize * SMALL_RAISE));
-			raiseSmallEV = rightCallPr * (winningPr * (potSize + (potSize + toCall) * SMALL_RAISE) -
-					(1 - winningPr) * ((potSize + toCall) * SMALL_RAISE + toCall)) + (1 - rightCallPr) * potSize;
-		} else if (hasRightFold) {
-			double leftCallPr = updateEH2(myEHFuture, leftEH, potSize * (1 + SMALL_RAISE),
-					new Action(Action.Type.CALL, potSize * SMALL_RAISE));
-			raiseSmallEV = leftCallPr * (winningPr * (potSize + (potSize + toCall) * SMALL_RAISE) -
-					(1 - winningPr) * ((potSize + toCall) * SMALL_RAISE + toCall)) + (1 - leftCallPr) * potSize;
-		} else {
-			double leftCallPr = updateEH3(myEHFuture, leftEH, rightEH, potSize * (1 + SMALL_RAISE),
-					new Action(Action.Type.CALL, potSize * SMALL_RAISE));
-			double rightCallPr = updateEH3(myEHFuture, rightEH, leftEH, potSize * (1 + SMALL_RAISE),
-					new Action(Action.Type.CALL, potSize * SMALL_RAISE));
-			
-			
+		decisionEV[2] = EVForRaise(winningPr, SMALL_RAISE);
+
+		// raise medium
+		decisionEV[3] = EVForRaise(winningPr, MEDIUM_RAISE);
+		
+		// raise big
+		decisionEV[4] = EVForRaise(winningPr, BIG_RAISE);
+
+		int largestIndex = 0;
+		double largestEV = decisionEV[0];
+		for (int i = 0; i < 5; i++) {
+			double ev = decisionEV[i];
+			if (ev > largestEV) {
+				largestIndex = i;
+				largestEV = ev;
+			}
 		}
 		
-		// raise medium
-		// raise big
+		int myPot = stackSize - myStack;
+		int leftPot = stackSize - leftStack;
+		int rightPot = stackSize - rightStack;
 		
-//		// update my eh
-//		if (!hasFlop) {
-//			myEH.addCard(myHand.community.get(0).toLibValue());
-//			myEH.addCard(myHand.community.get(1).toLibValue());
-//			myEH.addCard(myHand.community.get(2).toLibValue());
-//			
-//			hasFlop = true;
-//		}
-//		
-//		if (hasLeftFold) {
-//			updateEH2(myEH, rightEH, nextAction);
-//		} else if (hasRightFold) {
-//			updateEH2(myEH, leftEH, nextAction);
-//		} else {
-//			updateEH3(myEH, leftEH, rightEH, nextAction);
-//		}
-		
-		return nextAction.toString();
+		switch (largestIndex) {
+		case 0:
+			return "CALL";
+		case 1:
+			return "CHECK";
+		case 2:
+			int r = (int) ((2*rightPot + leftPot) * (1 + SMALL_RAISE) - myPot);
+			return (canCall ? "RAISE " : "BET ") + r;
+		case 3:
+			r = (int) ((2*rightPot + leftPot) * (1 + MEDIUM_RAISE) - myPot);
+			return (canCall ? "RAISE " : "BET ") + r;
+		case 4:
+			r = (int) ((2*rightPot + leftPot) * (1 + BIG_RAISE) - myPot);
+			return (canCall ? "RAISE " : "BET ") + r;
+		default:
+			return "CHECK";
+		}
 	}
 
 	@Override
 	public String turn_computation() {
-		return "CHECK";
+		return flop_computation();
 	}
 
 	@Override
 	public String river_computation() {
-		return "CHECK";
+		return flop_computation();
 	}
 }
