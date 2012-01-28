@@ -105,12 +105,13 @@ public class ExpectedHand {
 	public ExpectedHand clone(){
 		return new ExpectedHand(this);
 	}
-	public void normalize(){
-		if(normalized)return;
+	public double normalize(){
+		if(normalized)return 1.0;
 		double sum = 0.0;
 		for(int i=0;i<len;i++)sum+=hand[i].prob;
 		for(int i=0;i<len;i++)hand[i].prob/=sum;
 		normalized = true;
+		return sum;
 	}
 	public void updateRank(){
 		if(rankUpdated)return;
@@ -341,12 +342,12 @@ public class ExpectedHand {
 		sample(iter);
 		return internalComputeOdds(c1,c2,sample,iter,false);
 	}
-	public void multiply(HandsProbability hp){
+	public double multiply(HandsProbability hp){
 		for(int i=0;i<len;i++){
 			hand[i].prob*=hp.getProb(hand[i].c1,hand[i].c2);
 		}
 		normalized = false;
-		normalize();
+		return normalize();
 	}
 	public double computeSixCardOdds(int c1,int c2){ //return 0-1
 		return internalComputeOdds(c1,c2,hand,len,true);
