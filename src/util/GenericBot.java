@@ -15,7 +15,7 @@ public abstract class GenericBot {
 	// hand information
 	public int handId;
 	public int position;	// 0 = dealer, 1 = sb, 2 = bb
-	public int myBank;
+	public int myBank = 0;
 	public int leftBank;
 	public int rightBank;
 	public Hand myHand;
@@ -118,7 +118,10 @@ public abstract class GenericBot {
 			System.out.println("Legal action:" + legalActions.toString());
 			response = decide(); //compute next action
 		} else if (tokens[0].compareToIgnoreCase("HANDOVER") == 0) {
+			myBank -= (stackSize - myStack);
 			// do nothing
+			System.out.println("Invested " + (stackSize - myStack));
+			System.out.println("Bank: " + myBank);
 		} else {
 			System.out.println("Packet type parse error.");
 			return null;
@@ -210,6 +213,8 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			result = new Action(Action.Type.WIN, actor, amount);
+			myBank += amount;
+			System.out.println("Win " + amount);
 		} else {
 			System.out.println("Action parse error.");
 		}
