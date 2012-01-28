@@ -79,6 +79,7 @@ public abstract class GenericBot {
 				break;
 			}
 			
+			handInitialize();
 			System.out.println("Hole Cards: " + myHand.hole[0] + ", " + myHand.hole[1]);
 		} else if (tokens[0].compareToIgnoreCase("GETACTION") == 0) {
 			reset_variables();
@@ -90,6 +91,8 @@ public abstract class GenericBot {
 					myHand.addCards(new Card(boardCardsTokens[i]));
 				}
 			}
+			System.out.println(myHand.community);
+			
 			int numLastActions = Integer.parseInt(tokens[3 + (numBoardCards > 0 ? 1 : 0)]);
 			if (numLastActions > 0) {
 				String[] lastActionsTokens = tokens[4 + (numBoardCards > 0 ? 1 : 0)].split(",");
@@ -224,6 +227,8 @@ public abstract class GenericBot {
 			else if (result.actor.compareToIgnoreCase(rightName) == 0)
 				rightAction = result;
 		}
+		
+		reactToAction(result);
 		return result;
 	}
 
@@ -302,5 +307,7 @@ public abstract class GenericBot {
 	public abstract String turn_computation();
 	public abstract String river_computation();
 
+	public abstract void handInitialize();
 	public abstract void handleShow(Action a);
+	public abstract void reactToAction(Action a);
 }
