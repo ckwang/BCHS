@@ -33,6 +33,7 @@ public abstract class GenericBot {
 	public List<Action> legalActions = new ArrayList<Action>();
 	public boolean canCheck = false;
 	public boolean canCall = false;
+	public int toCall = -1;	// TODO: not implemented yet
 	public int toBet = -1;
 	public int toRaise = -1;
 
@@ -58,6 +59,26 @@ public abstract class GenericBot {
 			leftBank = Integer.parseInt(tokens[6]);
 			rightBank = Integer.parseInt(tokens[7]);
 			timeBank = Double.parseDouble(tokens[8]);
+			
+			myStack = stackSize;
+			leftStack = stackSize;
+			rightStack = stackSize;
+			
+			switch (position) {
+			case 0:
+				leftStack -= sb;
+				rightStack -= bb;
+				break;
+			case 1:
+				myStack -= sb;
+				leftStack -= bb;
+				break;
+			case 2:
+				myStack -= bb;
+				rightStack -= sb;
+				break;
+			}
+			
 			System.out.println("Hole Cards: " + myHand.hole[0] + ", " + myHand.hole[1]);
 		} else if (tokens[0].compareToIgnoreCase("GETACTION") == 0) {
 			reset_variables();

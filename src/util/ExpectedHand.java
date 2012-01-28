@@ -84,12 +84,34 @@ public class ExpectedHand {
 			}
 		}
 	}
-	public void normalize(){
-		if(normalized)return;
+	public ExpectedHand(ExpectedHand eh){
+
+		sampleSize = 0;
+		len = eh.len;
+		common = eh.common;
+		for(int i=0;i<len;i++)hand[i]=eh.hand[i].clone();
+		
+		for(int i=0;i<common;i++)comCard[i]=eh.comCard[i];
+		for(int i=0;i<52*52;i++)position[i]=eh.position[i];
+		
+		rankUpdated = eh.rankUpdated;
+		positionUpdated = eh.positionUpdated;
+		indexUpdated = eh.indexUpdated;
+		drawUpdated = eh.drawUpdated;
+		sorted = eh.sorted;
+		reduced = eh.reduced;
+		normalized = eh.reduced;
+	}
+	public ExpectedHand clone(){
+		return new ExpectedHand(this);
+	}
+	public double normalize(){
+		if(normalized)return 1.0;
 		double sum = 0.0;
 		for(int i=0;i<len;i++)sum+=hand[i].prob;
 		for(int i=0;i<len;i++)hand[i].prob/=sum;
 		normalized = true;
+		return sum;
 	}
 	public void updateRank(){
 		if(rankUpdated)return;
@@ -176,6 +198,33 @@ public class ExpectedHand {
 	}
 	public void updateDraw(){
 		if(drawUpdated)return;
+		DrawHand dh = null;
+		if(common != 3 && common != 4){
+			for(int i=0;i<len;i++)hand[i].draw = 0;
+		}else{
+			if(common == 3){
+				dh = new DrawHand(new Card(Card.libValueToValue(comCard[0])),
+						new Card(Card.libValueToValue(comCard[1])),
+						new Card(Card.libValueToValue(comCard[2]))
+				);
+			}else if(common == 4){
+				dh = new DrawHand(new Card(Card.libValueToValue(comCard[0])),
+						new Card(Card.libValueToValue(comCard[1])),
+						new Card(Card.libValueToValue(comCard[2])),
+						new Card(Card.libValueToValue(comCard[3]))
+				);
+			}
+			
+			int[] flush = dh.analyzePossibleFlushDraw();
+			int[] straight = dh.analyzePossibleStraightDraw();
+			
+			
+			for(int i=0;i<len;i++){
+				hand[i].draw = flush[DrawHand.twoLibCardsToInt(hand[i].c1, hand[i].c2)]+
+						straight[DrawHand.twoLibCardsToInt(hand[i].c1, hand[i].c2)];
+			}
+		}
+		
 		drawUpdated = true;
 	}
 	public void sort(){
@@ -283,24 +332,24 @@ public class ExpectedHand {
 				result += PreflopTable.getProb(c1, c2, phs[i].c1,phs[i].c2)*100*phs[i].prob;
 			}
 		}		
-		return result/aggr;
+		return result/aggr/100;
 	}
 	public double computeOdds(int c1,int c2){
 		return internalComputeOdds(c1,c2,hand,len,false);		
 	}
-	public double computeOddsBySample(int c1,int c2,int iter){ //return 0-100
+	public double computeOddsBySample(int c1,int c2,int iter){ //return 0-1
 		if(iter>=len)return computeOdds(c1,c2);
 		sample(iter);
 		return internalComputeOdds(c1,c2,sample,iter,false);
 	}
-	public void multiply(HandsProbability hp){
+	public double multiply(HandsProbability hp){
 		for(int i=0;i<len;i++){
 			hand[i].prob*=hp.getProb(hand[i].c1,hand[i].c2);
 		}
 		normalized = false;
-		normalize();
+		return normalize();
 	}
-	public double computeSixCardOdds(int c1,int c2){ //return 0-100
+	public double computeSixCardOdds(int c1,int c2){ //return 0-1
 		return internalComputeOdds(c1,c2,hand,len,true);
 	}
 	public void shuffleGen(int iter){
@@ -359,7 +408,16 @@ public class ExpectedHand {
 				}
 			}		
 		}		
-		return result/aggr;		
+		return result/aggr/100;		
+	}
+	public static double computeSixCardOdds3(int c1,int c2,ExpectedHand eh1,ExpectedHand eh2,int iter){
+		return eh1.computeSixCardOdds3(c1, c2, eh2, iter);
+	}
+	public static double computeSixCardOdds(int c1,int c2,ExpectedHand eh1){
+		return eh1.computeSixCardOdds(c1, c2);
+	}
+	public static double computeOddsBySample(int c1,int c2,ExpectedHand eh1, int iter){
+		return eh1.computeOddsBySample(c1, c2, iter);
 	}
 	public void updateAll(){
 		normalize();
@@ -374,18 +432,19 @@ public class ExpectedHand {
 		long start = System.nanoTime();
 		for(int i=0;i<100;i++){
 			ExpectedHand eh = new ExpectedHand();
-			ExpectedHand eh2 = new ExpectedHand();
+			ExpectedHand eh2 = eh.clone();
 			
 			eh.addCard(7);
 			eh.addCard(13);
 			eh.addCard(17);
-			//eh.updateAll();
+			eh.updateAll();
 			//eh.addCard(29);			
 			//eh.reduce(100);
 			//System.out.println(eh.computeSixCardOdds(19,31));
 			//eh.reduce(200);
-			System.out.println(eh.getWinningProbility(47,51));
-			System.out.println(eh.computeSixCardOdds3(12, 31, eh2, 200));
+			for(int j=0;j<1000;j++)eh.getWinningProbility(47,51);
+			//System.out.println(eh.getWinningProbility(47,51));
+			System.out.println(computeSixCardOdds3(12, 31, eh, eh2, 300));
 			//System.out.println(eh.computeSixCardOdds(12, 31));
 		}
 		long end = System.nanoTime();
