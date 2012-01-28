@@ -354,7 +354,6 @@ public class ExpectedHand {
 			//eh.reduce(100);
 			//System.out.println(eh.computeSixCardOdds(19,31));
 			System.out.println(eh.computeSixCardOdds3(12, 31, eh2, 200));
-			//System.out.println(eh.computeSixCardOdds(19, 31));
 		}
 		long end = System.nanoTime();
 		System.out.println((end-start)/1000000.0/100);
