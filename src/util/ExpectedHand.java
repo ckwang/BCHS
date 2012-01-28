@@ -84,6 +84,27 @@ public class ExpectedHand {
 			}
 		}
 	}
+	public ExpectedHand(ExpectedHand eh){
+
+		sampleSize = 0;
+		len = eh.len;
+		common = eh.common;
+		for(int i=0;i<len;i++)hand[i]=eh.hand[i].clone();
+		
+		for(int i=0;i<common;i++)comCard[i]=eh.comCard[i];
+		for(int i=0;i<52*52;i++)position[i]=eh.position[i];
+		
+		rankUpdated = eh.rankUpdated;
+		positionUpdated = eh.positionUpdated;
+		indexUpdated = eh.indexUpdated;
+		drawUpdated = eh.drawUpdated;
+		sorted = eh.sorted;
+		reduced = eh.reduced;
+		normalized = eh.reduced;
+	}
+	public ExpectedHand clone(){
+		return new ExpectedHand(this);
+	}
 	public void normalize(){
 		if(normalized)return;
 		double sum = 0.0;
@@ -410,7 +431,7 @@ public class ExpectedHand {
 		long start = System.nanoTime();
 		for(int i=0;i<100;i++){
 			ExpectedHand eh = new ExpectedHand();
-			ExpectedHand eh2 = new ExpectedHand();
+			ExpectedHand eh2 = eh.clone();
 			
 			eh.addCard(7);
 			eh.addCard(13);
