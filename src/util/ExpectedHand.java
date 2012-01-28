@@ -126,7 +126,7 @@ public class ExpectedHand {
 			step+=hand[i].prob;
 			if(i==len-1||hand[i].rank!=hand[i+1].rank){
 				for(int j=start;j<=i;j++){
-					hand[i].position = current+step/2;
+					hand[j].position = current+step/2;
 				}
 				current+=step;
 				step = 0.0;
@@ -145,8 +145,34 @@ public class ExpectedHand {
 		indexUpdated = true;
 	}
 	public double getWinningProbility(int c1,int c2){
-		if(!indexUpdated)updatePositionIndex();
-		return 1-position[c1*52+c2];
+		if(!reduced){
+			if(!indexUpdated)updatePositionIndex();
+			return 1-position[c1*52+c2];
+		}else{
+			if(!rankUpdated)updateRank();
+			if(!positionUpdated)updatePosition();
+			int queryrank = 0;
+			if(common == 3){
+				queryrank = FiveEval.getBestRankOf(c1, c2, 
+						comCard[0], comCard[1], comCard[2]);
+			}else if(common == 4){
+				queryrank = FiveEval.getBestRankOf(c1, c2, 
+						comCard[0], comCard[1], comCard[2], comCard[3]);
+			}else if(common == 5){
+				queryrank = FiveEval.getBestRankOf(c1, c2, 
+						comCard[0], comCard[1], comCard[2], comCard[3], comCard[4]);
+			}
+			int L = 0, R = len, M;
+			while(L<R-1){
+				M=(L+R)/2;
+				if(queryrank>hand[M].rank){
+					R = M;
+				}else {
+					L = M;
+				}
+			}
+			return 1-hand[L].position;
+		}
 	}
 	public void updateDraw(){
 		if(drawUpdated)return;
@@ -207,6 +233,10 @@ public class ExpectedHand {
 			hand[i].prob=1.0/siz;
 		}
 		len = siz;
+		normalized = true;
+		indexUpdated = false;
+		positionUpdated = false;
+		sorted = false;
 		return;
 	}
 	public void addCard(int c1){
@@ -287,7 +317,7 @@ public class ExpectedHand {
 		int size;
 		for(int round = 0; round<=(iter-1)/len; round++){
 			if(round!=(iter-1)/len)size = len;
-			else size = iter%len;
+			else size = (iter-1)%len + 1;
 			
 			sample(size);
 			eh.sample(size);
@@ -348,12 +378,15 @@ public class ExpectedHand {
 			
 			eh.addCard(7);
 			eh.addCard(13);
-			eh.addCard(51);
-			eh.updateAll();
+			eh.addCard(17);
+			//eh.updateAll();
 			//eh.addCard(29);			
 			//eh.reduce(100);
 			//System.out.println(eh.computeSixCardOdds(19,31));
+			//eh.reduce(200);
+			System.out.println(eh.getWinningProbility(47,51));
 			System.out.println(eh.computeSixCardOdds3(12, 31, eh2, 200));
+			//System.out.println(eh.computeSixCardOdds(12, 31));
 		}
 		long end = System.nanoTime();
 		System.out.println((end-start)/1000000.0/100);
