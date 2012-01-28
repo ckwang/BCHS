@@ -135,9 +135,20 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			result = new Action(Action.Type.BET, actor, amount);
+			if (actor.compareToIgnoreCase(leftName) == 0)
+				leftStack -= amount;
+			else
+				rightStack -= amount;
 		} else if (tokens[0].compareToIgnoreCase("CALL") == 0) {
 			String actor = tokens[1];
 			result = new Action(Action.Type.CALL, actor);
+			if (actor.compareToIgnoreCase(leftName) == 0) {
+				leftStack = myStack;
+			}
+			else {
+				if (!hasLeftFold) rightStack = leftStack;
+				else rightStack = myStack;
+			}
 		} else if (tokens[0].compareToIgnoreCase("CHECK") == 0) {
 			String actor = tokens[1];
 			result = new Action(Action.Type.CHECK, actor);
@@ -152,12 +163,20 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			result = new Action(Action.Type.RAISE, actor, amount);
+			if (actor.compareToIgnoreCase(leftName) == 0)
+				leftStack -= amount;
+			else
+				rightStack -= amount;
 		} else if (tokens[0].compareToIgnoreCase("DEAL") == 0) {
 			result = new Action(Action.Type.DEAL);
 		} else if (tokens[0].compareToIgnoreCase("POST") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			result = new Action(Action.Type.POST, actor, amount);
+			if (actor.compareToIgnoreCase(leftName) == 0)
+				leftStack -= amount;
+			else
+				rightStack -= amount;
 		} else if (tokens[0].compareToIgnoreCase("REFUND") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
