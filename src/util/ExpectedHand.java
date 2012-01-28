@@ -117,18 +117,30 @@ public class ExpectedHand {
 		if(rankUpdated)return;
 		if(common == 3){
 			for(int i=0;i<len;i++){
+				if(hand[i].prob<EPS){
+					hand[i].rank=-1;
+					continue;
+				}
 				hand[i].rank = FiveEval.getBestRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2]);
 			}
 			rankUpdated = true;
 		}else if(common == 4){
 			for(int i=0;i<len;i++){
+				if(hand[i].prob<EPS){
+					hand[i].rank=-1;
+					continue;
+				}
 				hand[i].rank = FiveEval.getBestRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2], comCard[3]);
 			}
 			rankUpdated = true;
 		}else if(common == 5){
 			for(int i=0;i<len;i++){
+				if(hand[i].prob<EPS){
+					hand[i].rank=-1;
+					continue;
+				}
 				hand[i].rank = FiveEval.getBestRankOf(
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2], comCard[3], comCard[4]);
 			}
@@ -307,6 +319,7 @@ public class ExpectedHand {
 		for(int i=0;i<plen;i++){
 			if(phs[i].c2 == c1 || phs[i].c2 == c2)continue;
 			if(phs[i].c1 == c1 || phs[i].c1 == c2)continue;
+			if(phs[i].prob<EPS)continue;
 			aggr += phs[i].prob;
 			if(common == 3){
 				if(!six){

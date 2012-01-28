@@ -4,7 +4,6 @@ import util.*;
 
 class ProbBot extends GenericBot {
 	
-	boolean hasInit = false;
 	boolean hasFlop = false;
 	boolean hasTurn = false;
 	boolean hasRiver = false;
@@ -13,15 +12,14 @@ class ProbBot extends GenericBot {
 	ExpectedHand rightEH;
 	
 	
-	private void initialize() {
+	@Override
+	public void handInitialize() {
 		int c1 = myHand.hole[0].toLibValue();
 		int c2 = myHand.hole[1].toLibValue();
 		
 		myEH = new ExpectedHand(c1, c2);
 		leftEH = new ExpectedHand();
 		rightEH = new ExpectedHand();
-		
-		hasInit = true;
 	}
 	
 	private double updateEH3(ExpectedHand eh1, final ExpectedHand eh2, final ExpectedHand eh3, int potSize, Action action) {
@@ -87,7 +85,13 @@ class ProbBot extends GenericBot {
 		return raiseEV;
 	}
 	
+	@Override
+	public void handleShow(Action a) {
+	}
+	
+	@Override
 	public void reactToAction(Action action) {
+				
 		switch (action.type) {
 		case DEAL:
 			if (myHand.community.size() == 3) {
@@ -132,8 +136,6 @@ class ProbBot extends GenericBot {
 	
 	@Override
 	public String preflop_computation() {
-		
-		if (!hasInit)	initialize();
 		
 		Card[] holeCards = myHand.hole;
 		double winningProb;
@@ -233,13 +235,13 @@ class ProbBot extends GenericBot {
 			return "CHECK";
 		case 2:
 			int r = (int) ((2*rightPot + leftPot) * (1 + SMALL_RAISE) - myPot);
-			return (canCall ? "RAISE " : "BET ") + r;
+			return (canCall ? "RAISE:" : "BET:") + r;
 		case 3:
 			r = (int) ((2*rightPot + leftPot) * (1 + MEDIUM_RAISE) - myPot);
-			return (canCall ? "RAISE " : "BET ") + r;
+			return (canCall ? "RAISE:" : "BET:") + r;
 		case 4:
 			r = (int) ((2*rightPot + leftPot) * (1 + BIG_RAISE) - myPot);
-			return (canCall ? "RAISE " : "BET ") + r;
+			return (canCall ? "RAISE:" : "BET:") + r;
 		default:
 			return "CHECK";
 		}
