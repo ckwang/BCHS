@@ -414,34 +414,6 @@ public class Hand {
 		return result;
 	}
 
-//	public List<Card> analyzePossibleFlushDraw() {
-//		assert community.size() < 5;
-//		
-//		List<Card> result = new ArrayList<Card>();
-//		int[] suitCount = new int[4];
-//		
-//		for (Card c : community) {
-//			suitCount[c.s]++;
-//		}
-//		
-//		for (int i = 0; i < 4; i++) {
-//			switch (suitCount[i]) {
-//			case 4:
-//				// TODO
-//				break;
-//			case 3:
-//				
-//				break;
-//			case 2:
-//				
-//				break;
-//			default:
-//				continue;
-//			}
-//		}
-//		
-//	}
-
 	public List<Card> analyzePossibleTriplet(Set<Integer> set) {
 		List<Card> result = new ArrayList<Card>();
 		Card c1, c2, c3;

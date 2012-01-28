@@ -134,6 +134,7 @@ public abstract class GenericBot {
 		if (tokens[0].compareToIgnoreCase("BET") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
+			potSize += amount;
 			result = new Action(Action.Type.BET, actor, amount);
 			if (actor.compareToIgnoreCase(leftName) == 0)
 				leftStack -= amount;
@@ -143,11 +144,18 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			result = new Action(Action.Type.CALL, actor);
 			if (actor.compareToIgnoreCase(leftName) == 0) {
+				potSize += leftStack - myStack;
 				leftStack = myStack;
 			}
 			else {
-				if (!hasLeftFold) rightStack = leftStack;
-				else rightStack = myStack;
+				if (!hasLeftFold) {
+					potSize += rightStack - leftStack;
+					rightStack = leftStack;
+				}
+				else {
+					potSize += rightStack - myStack;
+					rightStack = myStack;
+				}
 			}
 		} else if (tokens[0].compareToIgnoreCase("CHECK") == 0) {
 			String actor = tokens[1];
@@ -162,6 +170,7 @@ public abstract class GenericBot {
 		} else if (tokens[0].compareToIgnoreCase("RAISE") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
+			potSize += amount;
 			result = new Action(Action.Type.RAISE, actor, amount);
 			if (actor.compareToIgnoreCase(leftName) == 0)
 				leftStack -= amount;
@@ -172,6 +181,7 @@ public abstract class GenericBot {
 		} else if (tokens[0].compareToIgnoreCase("POST") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
+			potSize += amount;
 			result = new Action(Action.Type.POST, actor, amount);
 			if (actor.compareToIgnoreCase(leftName) == 0)
 				leftStack -= amount;
