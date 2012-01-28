@@ -310,12 +310,12 @@ public class ExpectedHand {
 				result += PreflopTable.getProb(c1, c2, phs[i].c1,phs[i].c2)*100*phs[i].prob;
 			}
 		}		
-		return result/aggr;
+		return result/aggr/100;
 	}
 	public double computeOdds(int c1,int c2){
 		return internalComputeOdds(c1,c2,hand,len,false);		
 	}
-	public double computeOddsBySample(int c1,int c2,int iter){ //return 0-100
+	public double computeOddsBySample(int c1,int c2,int iter){ //return 0-1
 		if(iter>=len)return computeOdds(c1,c2);
 		sample(iter);
 		return internalComputeOdds(c1,c2,sample,iter,false);
@@ -327,7 +327,7 @@ public class ExpectedHand {
 		normalized = false;
 		normalize();
 	}
-	public double computeSixCardOdds(int c1,int c2){ //return 0-100
+	public double computeSixCardOdds(int c1,int c2){ //return 0-1
 		return internalComputeOdds(c1,c2,hand,len,true);
 	}
 	public void shuffleGen(int iter){
@@ -386,7 +386,7 @@ public class ExpectedHand {
 				}
 			}		
 		}		
-		return result/aggr;		
+		return result/aggr/100;		
 	}
 	public static double computeSixCardOdds3(int c1,int c2,ExpectedHand eh1,ExpectedHand eh2,int iter){
 		return eh1.computeSixCardOdds3(c1, c2, eh2, iter);
