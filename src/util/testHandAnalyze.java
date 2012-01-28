@@ -1,44 +1,82 @@
 package util;
 
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+
+import lib.FiveEval;
+import java.util.Random;
 
 public class testHandAnalyze {
 	public static void main(String[] args) {
 		Hand h = new Hand(new Card("Js"), new Card("Qs"));
-		h.addCards(new Card("Ks"));
-		h.addCards(new Card("As"));
+		h.addCards(new Card("Kd"));
+		h.addCards(new Card("Kh"));
 		h.addCards(new Card("Ts"));
-		System.out.println("Best cat: " + h.bestCategory());
-		h = new Hand(new Card("4s"), new Card("5s"));
-		h.addCards(new Card("3s"));
-		h.addCards(new Card("As"));
-		h.addCards(new Card("2s"));
-		System.out.println("Best cat: " + h.bestCategory());
+		h.addCards(new Card("5s"));
+		Set<Integer> s = new HashSet<Integer>();
 		
 		PokerTable.makeNormTable();
-		List<Card> cards = h.analyzePossibleFlush();
+		List<Card> cards = h.analyzePossibleFlush(s);
 		PokerTable.assignProb2(cards, 0.5);
 		
 		long start = System.nanoTime();
 //		for (int i = 0; i < 100; i++) {
-		List<Card> quadHands = h.analyzePossibleQuads();
-		List<Card> fullhouseHands = h.analyzePossibleFullHouse();
-		List<Card> flushHands = h.analyzePossibleFlush();
-		List<Card> straightHands = h.analyzePossibleStraight();
-		List<Card> tripletHands = h.analyzePossibleTriplet();
-		List<Card> twoPairHands = h.analyzePossibleTwoPairs();
+		List<Card> quadHands = h.analyzePossibleQuads(s);
+		List<Card> fullhouseHands = h.analyzePossibleFullHouse(s);
+		List<Card> flushHands = h.analyzePossibleFlush(s);
+		List<Card> straightHands = h.analyzePossibleStraight(s);
+		List<Card> tripletsHands = h.analyzePossibleTriplet(s);
+		List<Card> twoPairHands = h.analyzePossibleTwoPair(s);
 		List<Double> quadProbs = PokerTable.assignProb2(quadHands, 0.5);
 		List<Double> fullhouseProbs = PokerTable.assignProb2(fullhouseHands, 0.5);
 		List<Double> flushProbs = PokerTable.assignProb2(flushHands, 0.5);
 		List<Double> straightProbs = PokerTable.assignProb2(straightHands, 0.5);
-		List<Double> tripletProbs = PokerTable.assignProb2(tripletHands, 0.5);
+		List<Double> tripletProbs = PokerTable.assignProb2(tripletsHands, 0.5);
 		List<Double> twoPairProbs = PokerTable.assignProb2(twoPairHands, 0.5);
 //		}
 		long end = System.nanoTime();
 		
-//		// renormalize winning prob if opp check
+		FiveEval e = new FiveEval();
+		Random r = new Random();
+		
+		// Monte Carlo p1
+		start = System.nanoTime();
+		int rank_our = FiveEval.getBestRankOf(h.hole[0].toLibValue(), h.hole[1].toLibValue(),
+				h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+		
+		int win_count = 0;
+		
+		for (int i = 0; i < 1000; i++) {
+			int c1, c2;
+			do {
+				c1 = r.nextInt(52);
+			} while (h.usedCards.contains(c1));
+			do {
+				c2 = r.nextInt(52);
+			} while (h.usedCards.contains(c2) || (c1 == c2));
+			int c1_lib = new Card(c1).toLibValue();
+			int c2_lib = new Card(c2).toLibValue();
+			
+			int rank_opp = FiveEval.getBestRankOf(c1_lib, c2_lib,
+				h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+			
+			if (rank_opp > rank_our)	win_count++;
+		}
+		end = System.nanoTime();
+		System.out.println("win_prob: " + (win_count * 1.0 / 1000));
+		
+		// renormalize winning prob if opp check
 //		for (int i = 0; i < quadProbs.size(); i++) {
-//
+//			for (int j = 0; j < quadProbs.size(); j++) {
+//				if (i == j)	continue;
+//				int ranki = e.getRankOf(quadHands.get(2*i).toLibValue(), quadHands.get(2*i+1).toLibValue(),
+//						h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+//				int rankj = e.getRankOf(quadHands.get(2*j).toLibValue(), quadHands.get(2*j+1).toLibValue(),
+//						h.community.get(0).toLibValue(), h.community.get(1).toLibValue(), h.community.get(2).toLibValue());
+//				
+//				
+//			}
 //		}
 //		for (int i = 0; i < fullhouseProbs.size(); i++) {
 //
@@ -49,11 +87,11 @@ public class testHandAnalyze {
 //		for (int i = 0; i < straightProbs.size(); i++) {
 //			
 //		}
-//		
+
 		
 		
 		System.out.println((end-start)/1000000.0);
-		double sum = 0;
+//		double sum = 0;
 //		for (int i = 0; i < quadProbs.size(); i++) {
 //			System.out.println(quadHands.get(2*i) + ", " + quadHands.get(2*i+1) + ": " + quadProbs.get(i));
 //			sum += quadProbs.get(i);
@@ -79,11 +117,11 @@ public class testHandAnalyze {
 //			sum += twoPairProbs.get(i);
 //		}
 		
-		for (int i = 0; i < twoPairHands.size() / 2; i++) {
-			System.out.println(twoPairHands.get(2*i) + ", " + twoPairHands.get(2*i+1) + ": ");
-//			sum += twoPairProbs.get(i);
-		}
+//		for (int i = 0; i < twoPairHands.size() / 2; i++) {
+//			System.out.println(twoPairHands.get(2*i) + ", " + twoPairHands.get(2*i+1) + ": ");
+////			sum += twoPairProbs.get(i);
+//		}
 		
-		System.out.println(sum / 47 / 46 * 2);
+//		System.out.println(sum / 47 / 46 * 2);
 	}
 }

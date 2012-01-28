@@ -381,7 +381,7 @@ public class HandSixEval {
 //		Random rnd = new Random();
 //		int counter = 0;
 		
-		int i = 1;
+		int i = 0;
 		do {
 			int table_card_4 = undealtCards[i];
 			long table_key = flop_table_key
@@ -654,7 +654,7 @@ public class HandSixEval {
 //		Random rnd = new Random();
 //		int counter = 0;
 		
-		int i = 1;
+		int i = 0;
 		do {
 			int table_card_4 = undealtCards[i];
 			long table_key = flop_table_key
@@ -746,17 +746,15 @@ public class HandSixEval {
 			noPlayers = 0;
 			hash = 0;
 			for( int p=0; p<number_of_players; p++ ){
-				initial_rank[p] = FiveEval.getBestRankOf(holeCards[2*p], holeCards[2*p+1], 
-						tableCards[0], tableCards[1], tableCards[2]);
-				if( bestrank<initial_rank[p] ){
-					bestrank = initial_rank[p];
+				if( bestrank<player_rank[p] ){
+					bestrank = player_rank[p];
 					noPlayers = 1;
-				}else if( bestrank==initial_rank[p] ){
+				}else if( bestrank==player_rank[p] ){
 					noPlayers++;
 				}
 			}
 			for( int p=0; p<number_of_players; p++ ){
-				if(bestrank==initial_rank[p]){
+				if(bestrank==player_rank[p]){
 					hash = hash*2+1;
 				}else{
 					hash = hash*2;
@@ -771,10 +769,10 @@ public class HandSixEval {
 				equity_type[n]=hash;
 				equity_count[n]=1;
 				for(int p=0; p<number_of_players; p++){
-					if(bestrank==initial_rank[p]){
+					if(bestrank==player_rank[p]){
 						share_amount[n][p]=equity_share[noPlayers];
 					}else{
-						share_amount[n][p]=equity_share[noPlayers];
+						share_amount[n][p]=0;
 					}
 				}
 				num_type++;
@@ -800,6 +798,8 @@ public class HandSixEval {
 
 		int j;
 		for(i = 0; i < num_type; i++){
+			//if(share_amount[i][0]<1)
+			//System.out.println(share_amount[i][0]+" "+share_amount[i][1]+" "+equity_count[i]+" "+total_count);
 			for(j = 0; j < num_type; j++ ){
 				double prob = equity_count[i]*equity_count[j]/((double)total_count*total_count); 
 				if(i==0){
@@ -812,7 +812,7 @@ public class HandSixEval {
 					}
 				}else{
 					for(int p=0; p<number_of_players; p++){
-						equity[p] += prob*(share_amount[i][p]+share_amount[j][p]);
+						equity[p] += prob*(share_amount[i][p]+share_amount[j][p])/2;
 					}
 				}
 			}
