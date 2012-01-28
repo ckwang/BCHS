@@ -68,7 +68,7 @@ public class Card {
 	public static int valueToRank(int n) {
 		return n / 4;
 	}
-	
+
 	public int toLibValue() {
 		int nr = 12 - r;
 		int ns;
@@ -82,12 +82,19 @@ public class Card {
 		default:
 			ns = s;
 		}
-		
 		return r*4 + s;
 	}
 	
 	public int toValue() {
 		return r*4 + s;
+	}
+
+	public static int pairToValue(int c1, int c2) {
+		assert c1 != c2;
+		if (c1 > c2)
+			return c2*52 + c1;
+		else
+			return c1*52 + c2;
 	}
 	
 	@Override
