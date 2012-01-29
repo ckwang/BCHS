@@ -54,12 +54,23 @@ public class HandHistory {
 
 		String[] tokens;
 		int index;
-		String line, action, name;
+		String line, action, name, cards;
 		while (!(line = br.readLine()).equals("")) {
 			tokens = line.split(" ");
 			action = null;
+			cards = null;
 			name = tokens[0];
-			if (tokens[0].equals("Dealt")) {
+			if (token[1].equals("FLOP") {
+				cards = tokens[3] + " " + tokens[4] + " " + tokens[5];
+			}
+			else if (token[1].equals("TURN") {
+				cards = tokens[3] + " " + tokens[4] + " " + tokens[5] + " " + tokens[6];
+			}
+			else if (token[1].equals("RIVER") {
+				cards = tokens[3] + " " + tokens[4] + " " + tokens[5] + " " + tokens[6]
+				+ " " + tokens[7];
+			}
+			else if (tokens[0].equals("Dealt")) {
 				action = tokens[3] + " " + tokens[4];
 				name = tokens[2];
 			}
@@ -78,7 +89,13 @@ public class HandHistory {
 			else if (tokens[1].equals("checks")) {
 				action = tokens[1];
 			}
-			if (action != null) {
+			if (cards != null) {
+				p1.add(cards);
+				p2.add(cards);
+				p3.add(cards);
+				hand.add(cards);
+			}
+			else if (action != null) {
 				index = nameToInt(name);
 				switch (index) {
 					case 1:
