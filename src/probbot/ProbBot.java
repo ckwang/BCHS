@@ -21,6 +21,8 @@ class ProbBot extends GenericBot {
 		leftEH = new ExpectedHand();
 		rightEH = new ExpectedHand();
 	}
+
+	public void processStatistics() {}
 	
 	private double updateEH3(ExpectedHand eh1, final ExpectedHand eh2, final ExpectedHand eh3, int potSize, Action action) {
 		class HP implements HandsProbability {
