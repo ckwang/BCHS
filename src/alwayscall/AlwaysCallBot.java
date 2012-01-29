@@ -89,4 +89,22 @@ class AlwaysCallBot extends GenericBot {
 	public String river_computation() {
 		return "CHECK";
 	}
+
+	@Override
+	public void handInitialize() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void handleShow(Action a) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void reactToAction(Action a) {
+		// TODO Auto-generated method stub
+		
+	}
 }

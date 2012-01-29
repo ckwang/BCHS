@@ -17,19 +17,49 @@ class ProbBot extends GenericBot {
 		int c1 = myHand.hole[0].toLibValue();
 		int c2 = myHand.hole[1].toLibValue();
 		
+		hasFlop = false;
 		myEH = new ExpectedHand(c1, c2);
 		leftEH = new ExpectedHand();
 		rightEH = new ExpectedHand();
+		
+		priorEH3(myEH);
+		priorEH3(leftEH);
+		priorEH3(rightEH);
+		
+//		switch (position) {
+//		case 0:	// dealer
+//			break;
+//		case 1:	// sb
+//			break;
+//		case 2:	// bb
+//		}
 	}
 	
-	private double updateEH3(ExpectedHand eh1, final ExpectedHand eh2, final ExpectedHand eh3, int potSize, Action action) {
+	private void priorEH3(ExpectedHand eh)	 {
+		class HP implements HandsProbability {
+			@Override
+			public double getProb(int c1, int c2) {
+				double winningProb = PokerTable.preflopWinningProb2(new Card(Card.libValueToValue(c1)),
+						new Card(Card.libValueToValue(c2)));
+				double threshold = 0.4;	// TODO: define the relation between threshold and parameters
+				double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));
+				
+				return playingProb;
+//				return 1;
+			}
+		}
+		
+		eh.multiply(new HP());
+	}
+	
+	private double updateEH3(ExpectedHand eh1, final ExpectedHand eh2, final ExpectedHand eh3, int potSize, final Action action) {
 		class HP implements HandsProbability {
 			@Override
 			public double getProb(int c1, int c2) {
 				double winningProb = eh2.getWinningProbility(c1, c2) * eh3.getWinningProbility(c1, c2);
 				double threshold = 0.33;	// TODO: define the relation between threshold and parameters
-				double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));
-				
+				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
+//				return 1;
 				return playingProb;
 			}
 		}
@@ -42,10 +72,11 @@ class ProbBot extends GenericBot {
 			@Override
 			public double getProb(int c1, int c2) {
 				double winningProb = eh2.getWinningProbility(c1, c2);
-				double threshold = 0.5;	// TODO: define the relation between threshold and parameters
-				double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));
+				double threshold = 0.3;	// TODO: define the relation between threshold and parameters
+				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
 				
 				return playingProb;
+//				return 1;
 			}
 		}
 		
@@ -54,7 +85,7 @@ class ProbBot extends GenericBot {
 	
 	private double EVForRaise(double winningPr, double raiseRate) {
 		double raiseEV;
-//		winningPr *= 0.5;
+//		winningPr *= 0;
 		ExpectedHand myEHFuture = myEH.clone();
 		if (hasLeftFold) {
 			ExpectedHand rightFuture = rightEH.clone();
@@ -64,19 +95,23 @@ class ProbBot extends GenericBot {
 			double rightCallPr = updateEH2(rightFuture, myEHFuture, (int) (potSize * (1 + raiseRate)),
 					new Action(Action.Type.CALL));
 			
+//			winningPr = 0;
 			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), rightFuture);
+			System.out.println("RightCallPr: " + rightCallPr + ", winningPr: " + winningPr);
 			
 			raiseEV = rightCallPr * (winningPr * (potSize + (potSize + toCall) * raiseRate) -
 					(1 - winningPr) * ((potSize + toCall) * raiseRate + toCall)) + (1 - rightCallPr) * potSize;
 		} else if (hasRightFold) {
 			ExpectedHand leftFuture = leftEH.clone();
-			updateEH2(myEHFuture, leftEH, (int) (potSize * (1 + raiseRate)),
+			updateEH2(myEHFuture, leftEH, (int) (potSize + toCall),
 					new Action(Action.Type.RAISE, (int) (potSize * raiseRate)));
 			
 			double leftCallPr = updateEH2(leftFuture, myEHFuture, (int) (potSize * (1 + raiseRate)),
 					new Action(Action.Type.CALL));
 			
+//			winningPr = 0;
 			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), leftFuture);
+			System.out.println("LeftCallPr: " + leftCallPr + ", winningPr: " + winningPr);
 			
 			raiseEV = leftCallPr * (winningPr * (potSize + (potSize + toCall) * raiseRate) -
 					(1 - winningPr) * ((potSize + toCall) * raiseRate + toCall)) + (1 - leftCallPr) * potSize;
@@ -123,6 +158,8 @@ class ProbBot extends GenericBot {
 				rightEH.addCard(card1);
 				rightEH.addCard(card2);
 				rightEH.addCard(card3);
+				
+				hasFlop = true;
 			} else {
 				int card = myHand.community.get(myHand.community.size() - 1).toLibValue();
 				myEH.addCard(card);
@@ -132,17 +169,19 @@ class ProbBot extends GenericBot {
 			
 			break;
 		case BET: case CALL: case CHECK: case FOLD: case RAISE:
-			if (action.actor.compareToIgnoreCase(leftName) == 0) {
-				if (hasRightFold) {
-					updateEH2(leftEH, myEH, potSize, action);
+			if (hasFlop) {
+				if (action.actor.compareToIgnoreCase(leftName) == 0) {
+					if (hasRightFold) {
+						updateEH2(leftEH, myEH, potSize, action);
+					} else {
+						updateEH3(leftEH, myEH, rightEH, potSize, action);
+					}
 				} else {
-					updateEH3(leftEH, myEH, rightEH, potSize, action);
-				}
-			} else {
-				if (hasLeftFold) {
-					updateEH2(rightEH, myEH, potSize, action);
-				} else {
-					updateEH3(rightEH, myEH, leftEH, potSize, action);
+					if (hasLeftFold) {
+						updateEH2(rightEH, myEH, potSize, action);
+					} else {
+						updateEH3(rightEH, myEH, leftEH, potSize, action);
+					}
 				}
 			}
 			
@@ -154,6 +193,15 @@ class ProbBot extends GenericBot {
 		
 		Card[] holeCards = myHand.hole;
 		double winningProb;
+		
+//		//TODO
+//		if (hasLeftFold) {
+//			updateEH2(myEH, rightEH, potSize, null);
+//		} else if (hasRightFold) {
+//			updateEH2(myEH, leftEH, potSize, null);
+//		} else {
+//			updateEH3(myEH, leftEH, rightEH, potSize, null);
+//		}
 		
 		switch (position) {
 		case 0:	// dealer
@@ -204,8 +252,16 @@ class ProbBot extends GenericBot {
 	public String flop_computation() {		
 		int c1 = myHand.hole[0].toLibValue();
 		int c2 = myHand.hole[1].toLibValue();
-		double winningPr = ExpectedHand.computeSixCardOdds3(c1, c2, leftEH, rightEH, 100);
 		
+		double winningPr;
+		
+		if (hasLeftFold) {
+			winningPr = ExpectedHand.computeSixCardOdds(c1, c2, rightEH);
+		} else if (hasRightFold) {
+			winningPr = ExpectedHand.computeSixCardOdds(c1, c2, leftEH);
+		} else {
+			winningPr = ExpectedHand.computeSixCardOdds3(c1, c2, leftEH, rightEH, 100);
+		}		
 		
 		final double SMALL_RAISE = 0.5;
 		final double MEDIUM_RAISE = 1;
@@ -228,6 +284,9 @@ class ProbBot extends GenericBot {
 		
 		// raise big
 		decisionEV[4] = EVForRaise(winningPr, BIG_RAISE);
+		
+		System.out.println("WinningPr: " + winningPr + ", Pot Size: " + potSize);
+		System.out.println("EV: " + decisionEV[0] + ", " + decisionEV[1] + ", " + decisionEV[2] + ", " + decisionEV[3] + ", " + decisionEV[4]);
 
 		int largestIndex = 0;
 		double largestEV = decisionEV[0];
@@ -242,6 +301,15 @@ class ProbBot extends GenericBot {
 		int myPot = stackSize - myStack;
 		int leftPot = stackSize - leftStack;
 		int rightPot = stackSize - rightStack;
+		
+		//TODO
+		if (hasLeftFold) {
+			updateEH2(myEH, rightEH, potSize, null);
+		} else if (hasRightFold) {
+			updateEH2(myEH, leftEH, potSize, null);
+		} else {
+			updateEH3(myEH, leftEH, rightEH, potSize, null);
+		}
 		
 		if (largestEV < 0)	return "FOLD";
 		
