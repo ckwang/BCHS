@@ -54,15 +54,30 @@ class ProbBot extends GenericBot {
 	
 	private double EVForRaise(double winningPr, double raiseRate) {
 		double raiseEV;
+//		winningPr *= 0.5;
 		ExpectedHand myEHFuture = myEH.clone();
 		if (hasLeftFold) {
-			double rightCallPr = updateEH2(myEHFuture, rightEH, (int) (potSize * (1 + raiseRate)),
-					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
+			ExpectedHand rightFuture = rightEH.clone();
+			updateEH2(myEHFuture, rightEH, (int) (potSize + toCall),
+					new Action(Action.Type.RAISE, (int) (potSize * raiseRate)));
+			
+			double rightCallPr = updateEH2(rightFuture, myEHFuture, (int) (potSize * (1 + raiseRate)),
+					new Action(Action.Type.CALL));
+			
+			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), rightFuture);
+			
 			raiseEV = rightCallPr * (winningPr * (potSize + (potSize + toCall) * raiseRate) -
 					(1 - winningPr) * ((potSize + toCall) * raiseRate + toCall)) + (1 - rightCallPr) * potSize;
 		} else if (hasRightFold) {
-			double leftCallPr = updateEH2(myEHFuture, leftEH, (int) (potSize * (1 + raiseRate)),
-					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
+			ExpectedHand leftFuture = leftEH.clone();
+			updateEH2(myEHFuture, leftEH, (int) (potSize * (1 + raiseRate)),
+					new Action(Action.Type.RAISE, (int) (potSize * raiseRate)));
+			
+			double leftCallPr = updateEH2(leftFuture, myEHFuture, (int) (potSize * (1 + raiseRate)),
+					new Action(Action.Type.CALL));
+			
+			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), leftFuture);
+			
 			raiseEV = leftCallPr * (winningPr * (potSize + (potSize + toCall) * raiseRate) -
 					(1 - winningPr) * ((potSize + toCall) * raiseRate + toCall)) + (1 - leftCallPr) * potSize;
 		} else {
@@ -70,7 +85,7 @@ class ProbBot extends GenericBot {
 			int leftPot = stackSize - leftStack;
 			int rightPot = stackSize - rightStack;
 			
-			int r = (int) ((2*rightPot + leftPot) * (1 + raiseRate) - myPot);
+			int r = (int) ((2*rightPot + leftPot) * raiseRate + rightPot - myPot);
 			
 			double leftCallPr = updateEH3(myEHFuture, leftEH, rightEH, potSize + r,
 					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
@@ -228,19 +243,21 @@ class ProbBot extends GenericBot {
 		int leftPot = stackSize - leftStack;
 		int rightPot = stackSize - rightStack;
 		
+		if (largestEV < 0)	return "FOLD";
+		
 		switch (largestIndex) {
 		case 0:
 			return "CALL";
 		case 1:
 			return "CHECK";
 		case 2:
-			int r = (int) ((2*rightPot + leftPot) * (1 + SMALL_RAISE) - myPot);
+			int r = (int) ((2*rightPot + leftPot) * SMALL_RAISE + rightPot - myPot);
 			return (canCall ? "RAISE:" : "BET:") + r;
 		case 3:
-			r = (int) ((2*rightPot + leftPot) * (1 + MEDIUM_RAISE) - myPot);
+			r = (int) ((2*rightPot + leftPot) * MEDIUM_RAISE + rightPot - myPot);
 			return (canCall ? "RAISE:" : "BET:") + r;
 		case 4:
-			r = (int) ((2*rightPot + leftPot) * (1 + BIG_RAISE) - myPot);
+			r = (int) ((2*rightPot + leftPot) * BIG_RAISE + rightPot - myPot);
 			return (canCall ? "RAISE:" : "BET:") + r;
 		default:
 			return "CHECK";
