@@ -15,7 +15,7 @@ public abstract class GenericBot {
 	// hand information
 	public int handId;
 	public int position;	// 0 = dealer, 1 = sb, 2 = bb
-	public int myBank;
+	public int myBank = 0;
 	public int leftBank;
 	public int rightBank;
 	public Hand myHand;
@@ -51,11 +51,13 @@ public abstract class GenericBot {
 			timeBank = Double.parseDouble(tokens[8]);
 			myStack = leftStack = rightStack = stackSize;
 		} else if (tokens[0].compareToIgnoreCase("NEWHAND") == 0) {
+			System.out.println("Net gain: " + (Integer.parseInt(tokens[5]) - myBank));
 			System.out.println("\nHand " + tokens[1]);
 			handId = Integer.parseInt(tokens[1]);
 			position = Integer.parseInt(tokens[2]);
 			myHand = new Hand(new Card(tokens[3]), new Card(tokens[4]));
 			myBank = Integer.parseInt(tokens[5]);
+			System.out.println("Bank: " + myBank);
 			leftBank = Integer.parseInt(tokens[6]);
 			rightBank = Integer.parseInt(tokens[7]);
 			timeBank = Double.parseDouble(tokens[8]);
@@ -90,8 +92,8 @@ public abstract class GenericBot {
 				for (int i = myHand.community.size(); i < numBoardCards; i++) {
 					myHand.addCards(new Card(boardCardsTokens[i]));
 				}
+				System.out.println("Community: " + myHand.community);
 			}
-			System.out.println(myHand.community);
 			
 			int numLastActions = Integer.parseInt(tokens[3 + (numBoardCards > 0 ? 1 : 0)]);
 			if (numLastActions > 0) {
@@ -123,13 +125,15 @@ public abstract class GenericBot {
 			System.out.println("Legal action:" + legalActions.toString());
 			response = decide(); //compute next action
 		} else if (tokens[0].compareToIgnoreCase("HANDOVER") == 0) {
+			processStatistics();
 			// do nothing
 		} else {
 			System.out.println("Packet type parse error.");
 			return null;
 		}
-		if (response != null)
+		if (response != null) {
 			System.out.println("My action: " + response);
+		}
 		return response;
 	}
 
@@ -198,6 +202,12 @@ public abstract class GenericBot {
 		} else if (tokens[0].compareToIgnoreCase("REFUND") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
+			if (actor.equals(leftName)) {
+				leftStack += amount;
+			}
+			else {
+				rightStack += amount;
+			}
 			result = new Action(Action.Type.REFUND, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("SHOW") == 0) {
 			String actor = tokens[1];
@@ -215,6 +225,12 @@ public abstract class GenericBot {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			result = new Action(Action.Type.WIN, actor, amount);
+			if (actor.equals(leftName)) {
+				leftStack += amount;
+			}
+			else {
+				rightStack += amount;
+			}
 		} else {
 			System.out.println("Action parse error.");
 		}
@@ -307,4 +323,5 @@ public abstract class GenericBot {
 	public abstract void handInitialize();
 	public abstract void handleShow(Action a);
 	public abstract void reactToAction(Action a);
+	public abstract void processStatistics();
 }

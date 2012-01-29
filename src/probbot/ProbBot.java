@@ -34,6 +34,8 @@ class ProbBot extends GenericBot {
 //		case 2:	// bb
 //		}
 	}
+
+	public void processStatistics() {}
 	
 	private void priorEH3(ExpectedHand eh)	 {
 		class HP implements HandsProbability {
