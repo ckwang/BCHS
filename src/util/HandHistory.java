@@ -60,13 +60,13 @@ public class HandHistory {
 			action = null;
 			cards = null;
 			name = tokens[0];
-			if (token[1].equals("FLOP") {
+			if (tokens[1].equals("FLOP")) {
 				cards = tokens[3] + " " + tokens[4] + " " + tokens[5];
 			}
-			else if (token[1].equals("TURN") {
+			else if (tokens[1].equals("TURN")) {
 				cards = tokens[3] + " " + tokens[4] + " " + tokens[5] + " " + tokens[6];
 			}
-			else if (token[1].equals("RIVER") {
+			else if (tokens[1].equals("RIVER")) {
 				cards = tokens[3] + " " + tokens[4] + " " + tokens[5] + " " + tokens[6]
 				+ " " + tokens[7];
 			}
