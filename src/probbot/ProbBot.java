@@ -25,14 +25,6 @@ class ProbBot extends GenericBot {
 		priorEH3(myEH);
 		priorEH3(leftEH);
 		priorEH3(rightEH);
-		
-//		switch (position) {
-//		case 0:	// dealer
-//			break;
-//		case 1:	// sb
-//			break;
-//		case 2:	// bb
-//		}
 	}
 
 	public void processStatistics() {}
@@ -44,10 +36,8 @@ class ProbBot extends GenericBot {
 				double winningProb = PokerTable.preflopWinningProb2(new Card(Card.libValueToValue(c1)),
 						new Card(Card.libValueToValue(c2)));
 				double threshold = 0.4;	// TODO: define the relation between threshold and parameters
-				double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));
-				
+				double playingProb = 1.0/(1+Math.exp(20*(threshold - winningProb)));				
 				return playingProb;
-//				return 1;
 			}
 		}
 		
@@ -61,7 +51,6 @@ class ProbBot extends GenericBot {
 				double winningProb = eh2.getWinningProbility(c1, c2) * eh3.getWinningProbility(c1, c2);
 				double threshold = 0.33;	// TODO: define the relation between threshold and parameters
 				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
-//				return 1;
 				return playingProb;
 			}
 		}
@@ -76,9 +65,7 @@ class ProbBot extends GenericBot {
 				double winningProb = eh2.getWinningProbility(c1, c2);
 				double threshold = 0.3;	// TODO: define the relation between threshold and parameters
 				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
-				
 				return playingProb;
-//				return 1;
 			}
 		}
 		
@@ -87,7 +74,7 @@ class ProbBot extends GenericBot {
 	
 	private double EVForRaise(double winningPr, double raiseRate) {
 		double raiseEV;
-//		winningPr *= 0;
+
 		ExpectedHand myEHFuture = myEH.clone();
 		if (hasLeftFold) {
 			ExpectedHand rightFuture = rightEH.clone();
@@ -97,7 +84,6 @@ class ProbBot extends GenericBot {
 			double rightCallPr = updateEH2(rightFuture, myEHFuture, (int) (potSize * (1 + raiseRate)),
 					new Action(Action.Type.CALL));
 			
-//			winningPr = 0;
 			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), rightFuture);
 			System.out.println("RightCallPr: " + rightCallPr + ", winningPr: " + winningPr);
 			
@@ -111,23 +97,28 @@ class ProbBot extends GenericBot {
 			double leftCallPr = updateEH2(leftFuture, myEHFuture, (int) (potSize * (1 + raiseRate)),
 					new Action(Action.Type.CALL));
 			
-//			winningPr = 0;
 			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), leftFuture);
 			System.out.println("LeftCallPr: " + leftCallPr + ", winningPr: " + winningPr);
 			
 			raiseEV = leftCallPr * (winningPr * (potSize + (potSize + toCall) * raiseRate) -
 					(1 - winningPr) * ((potSize + toCall) * raiseRate + toCall)) + (1 - leftCallPr) * potSize;
 		} else {
+			ExpectedHand leftFuture = leftEH.clone();
+			ExpectedHand rightFuture = rightEH.clone();
+			
 			int myPot = stackSize - myStack;
 			int leftPot = stackSize - leftStack;
 			int rightPot = stackSize - rightStack;
 			
 			int r = (int) ((2*rightPot + leftPot) * raiseRate + rightPot - myPot);
 			
-			double leftCallPr = updateEH3(myEHFuture, leftEH, rightEH, potSize + r,
+			updateEH3(myEHFuture, leftEH, rightEH, potSize + r,
 					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
-			double rightCallPr = updateEH3(myEHFuture, rightEH, leftEH, potSize + r,
-					new Action(Action.Type.CALL, (int) (potSize * raiseRate)));
+			
+			double leftCallPr = updateEH3(leftFuture, myEHFuture, rightEH, potSize + r,
+					new Action(Action.Type.CALL));
+			double rightCallPr = updateEH3(rightFuture, myEHFuture, leftEH, potSize + r,
+					new Action(Action.Type.CALL));
 
 			raiseEV = leftCallPr * rightCallPr * (winningPr * (3 * (myPot + r) - r - leftPot - rightPot) - (1 - winningPr) * r) +
 			((1 - leftCallPr) * rightCallPr + leftCallPr * (1 - rightCallPr)) * (winningPr * (2 * (myPot + r) - r - leftPot - rightPot) - (1 - winningPr) * r) +
@@ -192,62 +183,53 @@ class ProbBot extends GenericBot {
 	
 	@Override
 	public String preflop_computation() {
+		return flop_computation();
+//		Card[] holeCards = myHand.hole;
+//		double winningProb;
 		
-		Card[] holeCards = myHand.hole;
-		double winningProb;
-		
-//		//TODO
-//		if (hasLeftFold) {
-//			updateEH2(myEH, rightEH, potSize, null);
-//		} else if (hasRightFold) {
-//			updateEH2(myEH, leftEH, potSize, null);
-//		} else {
-//			updateEH3(myEH, leftEH, rightEH, potSize, null);
+//		switch (position) {
+//		case 0:	// dealer
+//			winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+//			if (winningProb >= 0.33) {
+//				return "CALL";
+//			} else {
+//				return "FOLD";
+//			}
+//		case 1:	// sb
+//			if (hasRightFold) {
+//				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.5) {
+//					return "CALL"; 
+//				} else {
+//					return "FOLD";
+//				}
+//			} else {
+//				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.33) {
+//					return "CALL";
+//				} else {
+//					return "FOLD";
+//				}
+//			}
+//		case 2:	// bb
+//			if (hasLeftFold || hasRightFold) {
+//				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.5) {
+//					return "CALL"; 
+//				} else {
+//					return "FOLD";
+//				}
+//			} else {
+//				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.33) {
+//					return "CALL";
+//				} else {
+//					return "FOLD";
+//				}
+//			}
 //		}
-		
-		switch (position) {
-		case 0:	// dealer
-			winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
-			if (winningProb >= 0.33) {
-				return "CALL";
-			} else {
-				return "FOLD";
-			}
-		case 1:	// sb
-			if (hasRightFold) {
-				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.5) {
-					return "CALL"; 
-				} else {
-					return "FOLD";
-				}
-			} else {
-				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.33) {
-					return "CALL";
-				} else {
-					return "FOLD";
-				}
-			}
-		case 2:	// bb
-			if (hasLeftFold || hasRightFold) {
-				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.5) {
-					return "CALL"; 
-				} else {
-					return "FOLD";
-				}
-			} else {
-				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.33) {
-					return "CALL";
-				} else {
-					return "FOLD";
-				}
-			}
-		}
-		
-		return null;
+//		
+//		return null;
 	}
 
 	@Override

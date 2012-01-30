@@ -107,4 +107,10 @@ class AlwaysCallBot extends GenericBot {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void processStatistics() {
+		// TODO Auto-generated method stub
+		
+	}
 }
