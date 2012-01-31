@@ -61,31 +61,18 @@ public abstract class GenericBot {
 			leftBank = Integer.parseInt(tokens[6]);
 			rightBank = Integer.parseInt(tokens[7]);
 			timeBank = Double.parseDouble(tokens[8]);
+			potSize = 0;
 			
 			myStack = stackSize;
 			leftStack = stackSize;
 			rightStack = stackSize;
-			
-			switch (position) {
-			case 0:
-				leftStack -= sb;
-				rightStack -= bb;
-				break;
-			case 1:
-				myStack -= sb;
-				leftStack -= bb;
-				break;
-			case 2:
-				myStack -= bb;
-				rightStack -= sb;
-				break;
-			}
-			
+
 			handInitialize();
 			System.out.println("Hole Cards: " + myHand.hole[0] + ", " + myHand.hole[1]);
 		} else if (tokens[0].compareToIgnoreCase("GETACTION") == 0) {
 			reset_variables();
-			potSize = Integer.parseInt(tokens[1]);
+//			potSize = lastPotSize;
+//			lastPotSize = Integer.parseInt(tokens[1]);
 			int numBoardCards = Integer.parseInt(tokens[2]);
 			if (numBoardCards > 0) {
 				String[] boardCardsTokens = tokens[3].split(",");
@@ -146,25 +133,34 @@ public abstract class GenericBot {
 			potSize += amount;
 			toCall = amount;
 			result = new Action(Action.Type.BET, actor, amount);
-			if (actor.compareToIgnoreCase(leftName) == 0)
+			if (actor.compareToIgnoreCase(leftName) == 0) {
 				leftStack -= amount;
-			else
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				rightStack -= amount;
+			} else {
+				myStack -= amount;
+			}
 		} else if (tokens[0].compareToIgnoreCase("CALL") == 0) {
 			String actor = tokens[1];
 			result = new Action(Action.Type.CALL, actor);
 			if (actor.compareToIgnoreCase(leftName) == 0) {
 				potSize += leftStack - myStack;
 				leftStack = myStack;
-			}
-			else {
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				if (!hasLeftFold) {
 					potSize += rightStack - leftStack;
 					rightStack = leftStack;
-				}
-				else {
+				} else {
 					potSize += rightStack - myStack;
 					rightStack = myStack;
+				}
+			} else {
+				if (!hasRightFold) {
+					potSize += myStack - rightStack;
+					myStack = rightStack;
+				} else {
+					potSize += myStack - leftStack;
+					myStack = leftStack;
 				}
 			}
 		} else if (tokens[0].compareToIgnoreCase("CHECK") == 0) {
@@ -172,10 +168,11 @@ public abstract class GenericBot {
 			result = new Action(Action.Type.CHECK, actor);
 		} else if (tokens[0].compareToIgnoreCase("FOLD") == 0) {
 			String actor = tokens[1];
-			if (actor.compareToIgnoreCase(leftName) == 0)
+			if (actor.compareToIgnoreCase(leftName) == 0) {
 				hasLeftFold = true;
-			else if (actor.compareToIgnoreCase(rightName) == 0)
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				hasRightFold = true;
+			}
 			result = new Action(Action.Type.FOLD, actor);
 		} else if (tokens[0].compareToIgnoreCase("RAISE") == 0) {
 			String actor = tokens[1];
@@ -183,10 +180,13 @@ public abstract class GenericBot {
 			potSize += amount;
 			toCall = amount;
 			result = new Action(Action.Type.RAISE, actor, amount);
-			if (actor.compareToIgnoreCase(leftName) == 0)
+			if (actor.compareToIgnoreCase(leftName) == 0) {
 				leftStack -= amount;
-			else
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				rightStack -= amount;
+			} else {
+				myStack -= amount;
+			}
 		} else if (tokens[0].compareToIgnoreCase("DEAL") == 0) {
 			result = new Action(Action.Type.DEAL);
 		} else if (tokens[0].compareToIgnoreCase("POST") == 0) {
@@ -195,18 +195,22 @@ public abstract class GenericBot {
 			potSize += amount;
 			toCall = amount;
 			result = new Action(Action.Type.POST, actor, amount);
-			if (actor.compareToIgnoreCase(leftName) == 0)
+			if (actor.compareToIgnoreCase(leftName) == 0) {
 				leftStack -= amount;
-			else
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				rightStack -= amount;
+			} else {
+				myStack -= amount;
+			}
 		} else if (tokens[0].compareToIgnoreCase("REFUND") == 0) {
 			String actor = tokens[1];
 			int amount = Integer.parseInt(tokens[2]);
 			if (actor.equals(leftName)) {
 				leftStack += amount;
-			}
-			else {
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				rightStack += amount;
+			} else {
+				myStack += amount;
 			}
 			result = new Action(Action.Type.REFUND, actor, amount);
 		} else if (tokens[0].compareToIgnoreCase("SHOW") == 0) {
@@ -227,9 +231,10 @@ public abstract class GenericBot {
 			result = new Action(Action.Type.WIN, actor, amount);
 			if (actor.equals(leftName)) {
 				leftStack += amount;
-			}
-			else {
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				rightStack += amount;
+			} else {
+				myStack += amount;
 			}
 		} else {
 			System.out.println("Action parse error.");
@@ -253,6 +258,11 @@ public abstract class GenericBot {
 			return new Action(Action.Type.BET, amount);
 		} else if (tokens[0].compareToIgnoreCase("CALL") == 0) {
 			canCall = true;
+			if (!hasRightFold) {
+				toCall = myStack - rightStack;
+			} else {
+				toCall = myStack - leftStack;
+			}
 			return new Action(Action.Type.CALL);
 		} else if (tokens[0].compareToIgnoreCase("CHECK") == 0) {
 			canCheck = true;

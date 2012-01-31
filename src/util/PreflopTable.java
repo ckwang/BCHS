@@ -40,7 +40,7 @@ public class PreflopTable {
 			flip = true;
 		}
 		double ans;
-		System.out.println(h1+" "+h2);
+//		System.out.println(h1+" "+h2);
 		if(index<length)ans = PreflopTableData1.prob[index]/1000.0;
 		else ans = PreflopTableData2.prob[index-length]/1000.0;
 		return flip?1-ans:ans;

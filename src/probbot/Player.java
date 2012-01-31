@@ -19,6 +19,9 @@ import util.GenericBot;
  */
 public class Player {
 	public static void main(String[] args){
+		
+        GenericBot bot = new ProbBot();
+		
 	    // Socket which will connect to the engine.
         Socket socket = null;
         // Reader to read packets from engine
@@ -43,7 +46,7 @@ public class Player {
         
         String input;
         String output;
-        GenericBot bot = new ProbBot();
+
         while (true) {
             try {
                 // block until engine sends us a packet, then read it into input
