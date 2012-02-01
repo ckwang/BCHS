@@ -544,15 +544,267 @@ public class HandEval {
 			equity_sum += equity_percentage[i];
 		}
 		equity_percentage[player_defect] = 100.0f - equity_sum;
-		String s = String.format("%.8f_%.8f_%.8f_%.8f_%.8f_%.8f_%.8f_%.8f",
-				equity_percentage[0], equity_percentage[1],
-				equity_percentage[2], equity_percentage[3],
-				equity_percentage[4], equity_percentage[5],
-				equity_percentage[6], equity_percentage[7]);
+		
 
 		return equity_percentage;
 	}
 
+	public static double[] computePreFlopEquityForSpecificHoleCardsRandom(int[] holeCards,
+			int number_of_players) {
+		if (holeCards == null || number_of_players <= 0
+				|| holeCards.length != 2 * number_of_players) {
+			return null;
+		}
+
+		Random generator = new Random();
+		
+		// Count and list the undealt cards, i.e. the remaining deck.
+		int[] undealtCards = new int[DECK_SIZE];
+		int number_of_undealt_cards = 0;
+
+		for (int i = 0; i < DECK_SIZE; i++) {
+			boolean bool_add_card = true;
+			for (int j = 0; j < 2 * number_of_players; j++) {
+				if (holeCards[j] == i) {
+					bool_add_card = false;
+				}
+			}
+			if (bool_add_card == true) {
+				undealtCards[number_of_undealt_cards] = i;
+				number_of_undealt_cards++;
+			}
+		}
+		// //////////
+
+		// Cumulative equities
+		long[] equity = new long[MAX_NUMBER_OF_PLAYERS];
+		for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++) {
+			equity[i] = 0;
+		}
+		// //////////
+
+		// Record player_rank
+		int[] player_rank = new int[MAX_NUMBER_OF_PLAYERS];
+		for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++) {
+			player_rank[i] = 0;
+		}
+		// //////////
+
+		// Possible shares in equity
+		int[] equity_share = new int[MAX_NUMBER_OF_PLAYERS + 1];
+		// The 0th entry is redundant
+		equity_share[0] = -1;
+		for (int i = 1; i < MAX_NUMBER_OF_PLAYERS + 1; i++) {
+			equity_share[i] = CAKE / i;
+		}
+		// /////////
+
+		// Player table key and suit stems
+		long[] player_key = new long[MAX_NUMBER_OF_PLAYERS];
+		int[][] player_flush_stem = new int[MAX_NUMBER_OF_PLAYERS][CLUB + 1];
+		int[] player_suit_stem = new int[MAX_NUMBER_OF_PLAYERS];
+
+		for (int p = 0; p < number_of_players; p++) {
+			int P = 2 * p;
+
+			int card_1 = holeCards[P];
+			int card_2 = holeCards[P + 1];
+
+			player_key[p] = deckcardsKey[card_1] + deckcardsKey[card_2];
+
+			player_flush_stem[p][SPADE] = (deckcardsSuit[card_1] == SPADE ? deckcardsFlush[card_1]
+					: 0)
+					+ (deckcardsSuit[card_2] == SPADE ? deckcardsFlush[card_2]
+							: 0);
+
+			player_flush_stem[p][HEART] = (deckcardsSuit[card_1] == HEART ? deckcardsFlush[card_1]
+					: 0)
+					+ (deckcardsSuit[card_2] == HEART ? deckcardsFlush[card_2]
+							: 0);
+
+			player_flush_stem[p][DIAMOND] = (deckcardsSuit[card_1] == DIAMOND ? deckcardsFlush[card_1]
+					: 0)
+					+ (deckcardsSuit[card_2] == DIAMOND ? deckcardsFlush[card_2]
+							: 0);
+
+			player_flush_stem[p][CLUB] = (deckcardsSuit[card_1] == CLUB ? deckcardsFlush[card_1]
+					: 0)
+					+ (deckcardsSuit[card_2] == CLUB ? deckcardsFlush[card_2]
+							: 0);
+
+			player_suit_stem[p] = deckcardsSuit[holeCards[P]]
+					+ deckcardsSuit[holeCards[P + 1]];
+		}
+		// //////
+
+		int player_defect = number_of_players;
+		int number_of_players_sharing_the_pot = 1;
+		int current_best_rank;
+		int next_rank;
+
+		// Begin calculating equities by dealing out all possible
+		// combinations of five table cards, adding up the incremental
+		// equities to find the total integral equities.
+
+		int i = 4;
+		do {
+			int table_card_1 = undealtCards[i];
+			int j = 3;
+			do {
+				int table_card_2 = undealtCards[j];
+				long table_key_cumulative_to_2 = deckcardsKey[table_card_1]
+						+ deckcardsKey[table_card_2];
+				int k = 2;
+				
+				do {
+					if(generator.nextInt(20)!=0){
+						k++;
+						continue;
+					}
+					int table_card_3 = undealtCards[k];
+					long table_key_cumulative_to_3 = table_key_cumulative_to_2
+							+ deckcardsKey[table_card_3];
+					int l = 1;
+					
+					do {
+						if(generator.nextInt(30)!=0){
+							l++;
+							continue;
+						}
+						int table_card_4 = undealtCards[l];
+						long table_key_cumulative_to_4 = table_key_cumulative_to_3
+								+ deckcardsKey[table_card_4];
+						int m = 0;
+						do {
+							int table_card_5 = undealtCards[m];
+							long table_key = table_key_cumulative_to_4
+									+ deckcardsKey[table_card_5];
+							// Reset table_flush_key.
+							int table_flush_key = UNVERIFIED;
+							// Reset number of interested players.
+							number_of_players_sharing_the_pot = 1;
+							// //////
+
+							long KEY = table_key + player_key[0];
+
+							int FLUSH_CHECK_KEY = (int) (KEY & SUIT_BIT_MASK);
+							int FLUSH_SUIT = flushCheckArray[FLUSH_CHECK_KEY];
+
+							if (FLUSH_SUIT < 0) {
+								KEY = (KEY >> NON_FLUSH_BIT_SHIFT);
+								current_best_rank = rankArray[KEY < CIRCUMFERENCE_SEVEN ? (int) KEY
+										: (int) KEY - CIRCUMFERENCE_SEVEN];
+								player_rank[0] = current_best_rank;
+							} else {
+								table_flush_key = (table_flush_key == UNVERIFIED ? (deckcardsSuit[table_card_1] == FLUSH_SUIT ? deckcardsFlush[table_card_1]
+										: 0)
+										+ (deckcardsSuit[table_card_2] == FLUSH_SUIT ? deckcardsFlush[table_card_2]
+												: 0)
+										+ (deckcardsSuit[table_card_3] == FLUSH_SUIT ? deckcardsFlush[table_card_3]
+												: 0)
+										+ (deckcardsSuit[table_card_4] == FLUSH_SUIT ? deckcardsFlush[table_card_4]
+												: 0)
+										+ (deckcardsSuit[table_card_5] == FLUSH_SUIT ? deckcardsFlush[table_card_5]
+												: 0)
+										: table_flush_key);
+								int player_flush_key = table_flush_key
+										+ player_flush_stem[0][FLUSH_SUIT];
+								current_best_rank = flushRankArray[player_flush_key];
+								player_rank[0] = current_best_rank;
+							}
+
+							int n = 1;
+							do {
+								KEY = table_key + player_key[n];
+
+								FLUSH_CHECK_KEY = (int) (KEY & SUIT_BIT_MASK);
+								FLUSH_SUIT = flushCheckArray[FLUSH_CHECK_KEY];
+
+								if (FLUSH_SUIT == NOT_A_FLUSH) {
+									KEY = (KEY >> NON_FLUSH_BIT_SHIFT);
+									next_rank = rankArray[((int) KEY < CIRCUMFERENCE_SEVEN ? (int) KEY
+											: (int) KEY - CIRCUMFERENCE_SEVEN)];
+									player_rank[n] = next_rank;
+								} else {
+									// ** This could be a good place to optimize
+									// **
+									table_flush_key = (table_flush_key == UNVERIFIED ? (deckcardsSuit[table_card_1] == FLUSH_SUIT ? deckcardsFlush[table_card_1]
+											: 0)
+											+ (deckcardsSuit[table_card_2] == FLUSH_SUIT ? deckcardsFlush[table_card_2]
+													: 0)
+											+ (deckcardsSuit[table_card_3] == FLUSH_SUIT ? deckcardsFlush[table_card_3]
+													: 0)
+											+ (deckcardsSuit[table_card_4] == FLUSH_SUIT ? deckcardsFlush[table_card_4]
+													: 0)
+											+ (deckcardsSuit[table_card_5] == FLUSH_SUIT ? deckcardsFlush[table_card_5]
+													: 0)
+											: table_flush_key);
+									int player_flush_key = table_flush_key
+											+ player_flush_stem[n][FLUSH_SUIT];
+									next_rank = flushRankArray[player_flush_key];
+									player_rank[n] = next_rank;
+								}
+
+								// // Compare the player_rank
+								//
+								// Case: new outright strongest player
+								if (current_best_rank < next_rank) {
+									// Update current best rank
+									current_best_rank = next_rank;
+									// Reset number of players interested
+									number_of_players_sharing_the_pot = 1;
+								} else if (current_best_rank == next_rank) { // Case:
+																				// pot
+																				// shared
+																				// with
+																				// another
+																				// player
+								// Increment by 1 the number of interest players
+									number_of_players_sharing_the_pot++;
+								}
+								// Last Case: new player loses
+								// There is nothing we need to do.
+								// /////
+								n++;
+							} while (n < player_defect);
+
+							// Calculate incremental equity
+							int incremental_equity = equity_share[number_of_players_sharing_the_pot];
+
+							// Add to the cumulative equities
+							int p = 0;
+							do {
+								if (player_rank[p] == current_best_rank) {
+									equity[p] += incremental_equity;
+								}
+								p++;
+							} while (p < player_defect);
+							m++;
+						} while (m < l);
+						l++;
+					} while (l < k);
+					k++;
+				} while (k < j);
+				j++;
+			} while (j < i);
+			i++;
+		} while (i < number_of_undealt_cards);
+
+		double[] equity_percentage = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0,
+				0.0, 0.0, 0.0 };
+		
+		double equity_sum = 0.0;
+		for (i = 0; i < MAX_NUMBER_OF_PLAYERS; i++) {
+			equity_percentage[i] = 100 * (equity[i] + 0.0);
+			equity_sum += equity_percentage[i];
+		}
+		for (i = 0; i < MAX_NUMBER_OF_PLAYERS; i++) {
+			equity_percentage[i] /=	equity_sum;
+		}
+		
+
+		return equity_percentage;
+	}
 	public static double[] computeFlopEquityForSpecificCards(int[] holeCards,
 			int[] tableCards, int number_of_players) {
 		if (holeCards == null || number_of_players <= 0

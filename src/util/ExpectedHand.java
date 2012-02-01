@@ -417,7 +417,7 @@ public class ExpectedHand {
 				}else{
 					/*result += handEval.computePreFlopEquityForSpecificHoleCards(
 							new int[]{c1,c2,hand[i].c1,hand[i].c2}, 2)[0] * hand[i].prob;*/
-					//result += PreflopTable.getProb(c1, c2, hand[i].c1,hand[i].c2)*100*hand[i].prob;
+					result += PreflopTable3.getProb3(c1, c2, s1, s2, e1, e2)*100*prob;
 				}
 			}		
 		}		
@@ -447,17 +447,17 @@ public class ExpectedHand {
 			ExpectedHand eh = new ExpectedHand();
 			ExpectedHand eh2 = eh.clone();
 			
-			eh.addCard(7);
-			eh.addCard(13);
-			eh.addCard(17);
-			eh.updateAll();
+			//eh.addCard(7);
+			//eh.addCard(13);
+			//eh.addCard(17);
+			//eh.updateAll();
 			//eh.addCard(29);			
 			//eh.reduce(100);
 			//System.out.println(eh.computeSixCardOdds(19,31));
 			//eh.reduce(200);
 			for(int j=0;j<1000;j++)eh.getWinningProbility(47,51);
 			//System.out.println(eh.getWinningProbility(47,51));
-			System.out.println(computeSixCardOdds3(12, 31, eh, eh2, 300));
+			System.out.println(computeSixCardOdds3(28, 51, eh, eh2, 300));
 			//System.out.println(eh.computeSixCardOdds(12, 31));
 		}
 		long end = System.nanoTime();
