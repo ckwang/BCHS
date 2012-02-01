@@ -94,4 +94,12 @@ public class Statistics {
 		chanceRaise[player][stage][seat][round]++;
 		raise[player][stage][seat][round][ratio]++;
 	}
+	public double getFoldProb(String name, int common, int time, int seat, int stack, int toCall){
+		int player = nameToInt(name), stage = commonToInt(common);
+		int round = timeToInt(time), size = estimatecall((double)toCall/stack);
+		if(chanceFold[player][stage][seat][round][size]>0){
+			return (double)fold[player][stage][seat][round][size]/chanceFold[player][stage][seat][round][size];
+		}
+		return 0.2;
+	}
 }
