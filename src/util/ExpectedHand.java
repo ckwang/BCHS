@@ -145,6 +145,11 @@ public class ExpectedHand {
 						hand[i].c1, hand[i].c2, comCard[0], comCard[1], comCard[2], comCard[3], comCard[4]);
 			}
 			rankUpdated = true;
+		}else{
+			for(int i=0;i<len;i++){
+				hand[i].rank=PreflopRank.getRank(hand[i].c1, hand[i].c2);
+			}
+			rankUpdated = true;
 		}
 		return;
 	}
@@ -456,7 +461,7 @@ public class ExpectedHand {
 			//System.out.println(eh.computeSixCardOdds(19,31));
 			//eh.reduce(200);
 			for(int j=0;j<1000;j++)eh.getWinningProbility(47,51);
-			//System.out.println(eh.getWinningProbility(47,51));
+			System.out.println(eh.getWinningProbility(47,46));
 			System.out.println(computeSixCardOdds3(28, 51, eh, eh2, 300));
 			//System.out.println(eh.computeSixCardOdds(12, 31));
 		}
