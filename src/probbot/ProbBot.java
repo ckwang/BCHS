@@ -162,7 +162,7 @@ class ProbBot extends GenericBot {
 		int leftPot = stackSize - leftStack;
 		int rightPot = stackSize - rightStack;
 		
-		toCall = toCall == -1 ? 0 : toCall;
+		toCall = (toCall == -1) ? 0 : toCall;
 		int calledPot = potSize + toCall;
 		raiseValue = (int) (calledPot * raiseRate + toCall);
 		raiseValue = (raiseValue > myStack) ? myStack: raiseValue;
@@ -268,6 +268,7 @@ class ProbBot extends GenericBot {
 			int activeCount = 0;
 			int p = 0;
 			int toCall = 0;
+			int potSize = 3 * stackSize - (leftStack + rightStack + myStack);
 			
 			if (action.actor.compareToIgnoreCase(leftName) == 0) {
 				activeCount = leftActiveCount;
@@ -284,7 +285,9 @@ class ProbBot extends GenericBot {
 				toCall = hasLeftFold ? (rightStack - myStack) : (rightStack - leftStack);
 			}
 			
-			if (action.actor.compareToIgnoreCase(leftName) == 0 || action.actor.compareToIgnoreCase(rightName) == 0) {
+			System.out.println("toCall: " + toCall + ", toBet: " + toBet);
+			
+			if ((action.actor.compareToIgnoreCase(leftName) == 0) || (action.actor.compareToIgnoreCase(rightName) == 0)) {
 				switch (action.type) {
 				case BET:
 					statistics.bet(action.actor, common, activeCount, p, potSize, action.amount);
