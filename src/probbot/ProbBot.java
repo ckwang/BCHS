@@ -269,20 +269,22 @@ class ProbBot extends GenericBot {
 			int p = 0;
 			int toCall = 0;
 			
-			if (action.actor.compareToIgnoreCase("leftName") == 0) {
-				leftActiveCount++;
+			if (action.actor.compareToIgnoreCase(leftName) == 0) {
 				activeCount = leftActiveCount;
+				leftActiveCount++;
+				common = leftEH.common;
 				p = (position + 1) % 3;
 				toCall = leftStack - myStack;
 
-			} else if (action.actor.compareToIgnoreCase("rightName") == 0) {
-				rightActiveCount++;
+			} else if (action.actor.compareToIgnoreCase(rightName) == 0) {
 				activeCount = rightActiveCount;
+				rightActiveCount++;
+				common = rightEH.common;
 				p = (position + 2) % 3;
 				toCall = hasLeftFold ? (rightStack - myStack) : (rightStack - leftStack);
 			}
 			
-			if (action.actor.compareToIgnoreCase("leftName") == 0 || action.actor.compareToIgnoreCase("rightName") == 0) {
+			if (action.actor.compareToIgnoreCase(leftName) == 0 || action.actor.compareToIgnoreCase(rightName) == 0) {
 				switch (action.type) {
 				case BET:
 					statistics.bet(action.actor, common, activeCount, p, potSize, action.amount);
@@ -291,10 +293,10 @@ class ProbBot extends GenericBot {
 					statistics.call(action.actor, common, activeCount, p, potSize, toCall);
 					break;
 				case CHECK:
-					statistics.check(action.actor, common, toCall);
+					statistics.check(action.actor, common, p);
 					break;
 				case FOLD:
-					statistics.fold(action.actor,common, activeCount, p, potSize, toCall);
+					statistics.fold(action.actor, common, activeCount, p, potSize, toCall);
 					break;
 				case RAISE:
 					statistics.raise(action.actor, common, activeCount, p, potSize, toCall, action.amount);
@@ -385,6 +387,24 @@ class ProbBot extends GenericBot {
 	public String flop_computation() {		
 		System.out.println("***");
 		System.out.println("toCall: " + toCall + ", toBet: " + toBet + ", toRaise: " + toRaise);
+		System.out.println("Folding Prob");
+		for(int i=1;i<2;i++){
+			System.out.println(statistics.namelist.get(i));
+			for(int j=0;j<4;j++){
+				System.out.println(j==0?"PREFLOP":j==1?"FLOP":j==2?"TURN":"RIVER");
+				for(int k=0;k<3;k++){
+					System.out.println(k==0?"DEALER":k==1?"SB":"BB");
+					for(int l=0;l<3;l++){
+						for(int m=0;m<3;m++){
+							System.out.print((double)statistics.fold[i][j][k][l][m]/
+									statistics.chanceFold[i][j][k][l][m]+"-");
+						}
+						System.out.println("");
+					}
+				}
+			}
+		}
+		
 //		System.out.println("myStack: " + myStack + ", leftStack: " + leftStack + ", rightStack: " + rightStack);
 
 		int c1 = myHand.hole[0].toLibValue();
