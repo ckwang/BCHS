@@ -1,7 +1,6 @@
 package probbot;
 
-import lib.HandEval;
-import lib.HandSixEval;
+import bot1.Statistics;
 import util.*;
 
 class ProbBot extends GenericBot {
@@ -12,6 +11,9 @@ class ProbBot extends GenericBot {
 	ExpectedHand myEH;
 	ExpectedHand leftEH;
 	ExpectedHand rightEH;
+	Statistics statistics = new Statistics();
+	int leftActiveCount = 0;
+	int rightActiveCount = 0;
 	
 	public ProbBot() {
 		myHand = new Hand(new Card(25), new Card(32));
@@ -46,6 +48,14 @@ class ProbBot extends GenericBot {
 		rightEH.addCard(card4);
 		
 		flop_computation();
+		
+		myHand.addCards(new Card(7));
+		int card5 = myHand.community.get(4).toLibValue();
+		myEH.addCard(card5);
+		leftEH.addCard(card5);
+		rightEH.addCard(card5);
+		
+		flop_computation();
 	}
 	
 	@Override
@@ -54,6 +64,11 @@ class ProbBot extends GenericBot {
 		int c2 = myHand.hole[1].toLibValue();
 		
 		hasFlop = false;
+		hasTurn = false;
+		hasRiver = false;
+		leftActiveCount = 0;
+		rightActiveCount = 0;
+		
 		myEH = new ExpectedHand(c1, c2);
 		leftEH = new ExpectedHand();
 		rightEH = new ExpectedHand();
@@ -215,6 +230,8 @@ class ProbBot extends GenericBot {
 		
 		switch (action.type) {
 		case DEAL:
+			leftActiveCount = 0;
+			rightActiveCount = 0;
 			if (myHand.community.size() == 3) {
 				int card1 = myHand.community.get(0).toLibValue();
 				int card2 = myHand.community.get(1).toLibValue();
@@ -236,10 +253,54 @@ class ProbBot extends GenericBot {
 				myEH.addCard(card);
 				leftEH.addCard(card);
 				rightEH.addCard(card);
+				
+				if (!hasTurn) {
+					hasTurn = true;
+				} else {
+					hasRiver = true;
+				}
 			}
 			
 			break;
 		case BET: case CALL: case CHECK: case FOLD: case RAISE:
+		
+			int common = 0;
+			int activeCount = 0;
+			int p = 0;
+			int toCall = 0;
+			
+			if (action.actor.compareToIgnoreCase("leftName") == 0) {
+				leftActiveCount++;
+				activeCount = leftActiveCount;
+				p = (position + 1) % 3;
+				toCall = leftStack - myStack;
+
+			} else if (action.actor.compareToIgnoreCase("rightName") == 0) {
+				rightActiveCount++;
+				activeCount = rightActiveCount;
+				p = (position + 2) % 3;
+				toCall = hasLeftFold ? (rightStack - myStack) : (rightStack - leftStack);
+			}
+			
+			if (action.actor.compareToIgnoreCase("leftName") == 0 || action.actor.compareToIgnoreCase("rightName") == 0) {
+				switch (action.type) {
+				case BET:
+					statistics.bet(action.actor, common, activeCount, p, potSize, action.amount);
+					break;
+				case CALL:
+					statistics.call(action.actor, common, activeCount, p, potSize, toCall);
+					break;
+				case CHECK:
+					statistics.check(action.actor, common, toCall);
+					break;
+				case FOLD:
+					statistics.fold(action.actor,common, activeCount, p, potSize, toCall);
+					break;
+				case RAISE:
+					statistics.raise(action.actor, common, activeCount, p, potSize, toCall, action.amount);
+				}
+			}
+			
 			if (hasFlop) {
 				if (action.actor.compareToIgnoreCase(leftName) == 0) {
 					if (hasRightFold) {
@@ -247,11 +308,19 @@ class ProbBot extends GenericBot {
 					} else {
 						updateEH3(leftEH, myEH, rightEH, potSize, action);
 					}
-				} else {
+				} else if (action.actor.compareToIgnoreCase(rightName) == 0) {
 					if (hasLeftFold) {
 						updateEH2(rightEH, myEH, potSize, action);
 					} else {
 						updateEH3(rightEH, myEH, leftEH, potSize, action);
+					}
+				} else {
+					if (hasLeftFold) {
+						updateEH2(myEH, rightEH, potSize, action);
+					} else if (hasRightFold) {
+						updateEH2(myEH, leftEH, potSize, action);
+					} else {
+						updateEH3(myEH, leftEH, rightEH, potSize, action);
 					}
 				}
 			}
@@ -316,7 +385,7 @@ class ProbBot extends GenericBot {
 	public String flop_computation() {		
 		System.out.println("***");
 		System.out.println("toCall: " + toCall + ", toBet: " + toBet + ", toRaise: " + toRaise);
-		System.out.println("myStack: " + myStack + ", leftStack: " + leftStack + ", rightStack: " + rightStack);
+//		System.out.println("myStack: " + myStack + ", leftStack: " + leftStack + ", rightStack: " + rightStack);
 
 		int c1 = myHand.hole[0].toLibValue();
 		int c2 = myHand.hole[1].toLibValue();
@@ -371,15 +440,6 @@ class ProbBot extends GenericBot {
 				largestIndex = i;
 				largestEV = ev;
 			}
-		}
-		
-		//TODO
-		if (hasLeftFold) {
-			updateEH2(myEH, rightEH, potSize, null);
-		} else if (hasRightFold) {
-			updateEH2(myEH, leftEH, potSize, null);
-		} else {
-			updateEH3(myEH, leftEH, rightEH, potSize, null);
 		}
 		
 		if (largestEV < 0)	return "FOLD";
