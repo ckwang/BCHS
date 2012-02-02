@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class Statistics {
-	public int [][][][][][] fold = new int [100][4][3][3][3][2]; //people, stage, seat, round, size, alive
-	public int [][][][][][] chanceFold = new int [100][4][3][3][3][2];
-	public int [][][][][][] raise = new int [100][4][3][3][3][2];
-	public int [][][][][] chanceRaise = new int [100][4][3][3][2];
+	public double [][][][][][] fold = new double [100][4][3][3][3][2]; //people, stage, seat, round, size, alive
+	public double [][][][][][] chanceFold = new double [100][4][3][3][3][2];
+	public double [][][][][][] raise = new double [100][4][3][3][3][2];
+	public double [][][][][] chanceRaise = new double [100][4][3][3][2];
 	public HashMap<String, Integer> names= new HashMap<String, Integer>();
 	public HashMap<Integer, String> namelist= new HashMap<Integer, String>();
 	public int players = 0;
@@ -32,7 +32,47 @@ public class Statistics {
 				}
 			}
 		}
+	}
+	public Statistics(String init){
+		String[] fields = init.split(" ");
+		players = 1;
+		names.put("all", 0);
+		namelist.put(0, "all");
 		
+		int count = 0;
+		for(int j=0;j<4;j++){
+			for(int k=0;k<3;k++){
+				for(int l=0;l<3;l++){
+					for(int n=0;n<2;n++){
+						chanceRaise[0][j][k][l][n] = Double.parseDouble(fields[count++]);	
+					}
+					for(int m=0;m<3;m++){
+						for(int n=0;n<2;n++){
+							fold[0][j][k][l][m][n] = Double.parseDouble(fields[count++]);	
+							chanceFold[0][j][k][l][m][n] = Double.parseDouble(fields[count++]);	
+							raise[0][j][k][l][m][n] = Double.parseDouble(fields[count++]);									
+						}
+					}
+				}
+			}
+		}
+		
+		for(int i=1;i<100;i++){
+			for(int j=0;j<4;j++){
+				for(int k=0;k<3;k++){
+					for(int l=0;l<3;l++){
+						for(int m=0;m<2;m++){
+							chanceRaise[i][j][k][l][m]=chanceRaise[0][j][k][l][m];
+							for(int n=0;n<3;n++){
+								fold[i][j][k][l][n][m]=fold[0][j][k][l][n][m];
+								chanceFold[i][j][k][l][n][m]=chanceFold[0][j][k][l][n][m];
+								raise[i][j][k][l][n][m]=raise[0][j][k][l][n][m];
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	public int nameToInt(String name1){
 		String name = new String(name1);
@@ -113,5 +153,76 @@ public class Statistics {
 			return (double)fold[player][stage][seat][round][size][num]/chanceFold[player][stage][seat][round][size][num];
 		}
 		return 0.2;
+	}
+	public String toInitString(){
+		StringBuilder sb = new StringBuilder();
+		
+		for(int i=0;i<1;i++){
+			for(int j=0;j<4;j++){
+				for(int k=0;k<3;k++){
+					for(int l=0;l<3;l++){
+						for(int n=0;n<2;n++){
+							sb.append(String.format("%.3f ", chanceRaise[i][j][k][l][n]));	
+						}
+						for(int m=0;m<3;m++){
+							for(int n=0;n<2;n++){
+								sb.append(String.format("%.3f ", fold[i][j][k][l][m][n]));
+								sb.append(String.format("%.3f ", chanceFold[i][j][k][l][m][n]));
+								sb.append(String.format("%.3f ", raise[i][j][k][l][m][n]));								
+							}
+						}
+					}
+				}
+			}
+		}
+		return sb.toString();
+		
+	}
+	public void reduce(){
+		for(int j=0;j<4;j++){
+			for(int k=0;k<3;k++){
+				for(int l=0;l<3;l++){					
+					for(int m=0;m<3;m++){
+						for(int n=0;n<2;n++){
+							if(chanceFold[0][j][k][l][m][n]>50){
+								fold[0][j][k][l][m][n]=(fold[0][j][k][l][m][n]/chanceFold[0][j][k][l][m][n])*50;
+								chanceFold[0][j][k][l][m][n] = 50;
+							}
+							if(chanceFold[0][j][k][l][m][n]<5){
+								if(n==1){
+									chanceFold[0][j][k][l][m][n] = chanceFold[0][j][k][l][m][0];
+									fold[0][j][k][l][m][n] = fold[0][j][k][l][m][0];
+								}else{
+									chanceFold[0][j][k][l][m][n] = 5;
+									fold[0][j][k][l][m][n] = 1.5;
+								}
+							}
+							if(chanceRaise[0][j][k][l][n]>50){
+								raise[0][j][k][l][m][n]=(raise[0][j][k][l][m][n]/chanceRaise[0][j][k][l][n])*50;	
+							}	
+							if(chanceRaise[0][j][k][l][n]<5){
+								if(n==1){
+									raise[0][j][k][l][m][n] = raise[0][j][k][l][m][0];
+								}else{
+									raise[0][j][k][l][m][n] = 0;
+								}
+							}
+						}
+					}
+					for(int n=0;n<2;n++){
+						if(chanceRaise[0][j][k][l][n]>50){
+							chanceRaise[0][j][k][l][n]=50;
+						}
+						if(chanceRaise[0][j][k][l][n]<5){
+							if(n==1){
+								chanceRaise[0][j][k][l][n] = chanceRaise[0][j][k][l][0];
+							}else{
+								chanceRaise[0][j][k][l][n] = 5;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
