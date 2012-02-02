@@ -113,6 +113,21 @@ class ProbBot extends GenericBot {
 		return prob;
 	}
 	
+//	private double updateRaiseEH(final ExpectedHand eh, final Action action,
+//			final String name, final int position, final int common, final int actionCount, final int pot, final int toCall, final int numPlayers) {
+//		class HP implements HandsProbability {
+//			@Override
+//			public double getProb(int c1, int c2) {
+//				double winningProb = eh.getWinningProbility(c1, c2);
+//				double threshold = statistics.getFoldProb(name, common, actionCount, position, pot, toCall, numPlayers);	
+//				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
+//				return playingProb;
+//			}
+//		}
+//		
+//		return eh.multiply(new HP());
+//	}
+	
 	private double[] EVForRaise(double raiseRate) {
 		double raiseEV;
 		int raiseValue;
@@ -271,9 +286,9 @@ class ProbBot extends GenericBot {
 			
 		System.out.println("---");
 		System.out.println(action.type + ":" + action.actor + ":" + action.amount);
-		System.out.println("myStack: " + myStack + ", leftStack: " + leftStack + ", rightStack: " + rightStack);
-		System.out.println("toCall: " + toCall + ", toBet: " + toBet);
-		System.out.println("potSize: " + potSize);
+//		System.out.println("myStack: " + myStack + ", leftStack: " + leftStack + ", rightStack: " + rightStack);
+//		System.out.println("toCall: " + toCall + ", toBet: " + toBet);
+//		System.out.println("potSize: " + potSize);
 		
 		switch (action.type) {
 		case DEAL:
@@ -343,7 +358,7 @@ class ProbBot extends GenericBot {
 				}
 			}
 			
-			if (hasFlop) {
+			if (hasFlop && (action.type != Action.Type.CHECK)) {
 				if (action.actor.compareToIgnoreCase(leftName) == 0) {
 					if (hasRightFold) {
 						updateEH(leftEH, action, leftName, p, common, activeCount, potSize, toCall, 2);
@@ -393,23 +408,6 @@ class ProbBot extends GenericBot {
 	public String flop_computation() {		
 		System.out.println("***");
 		System.out.println("toCall: " + toCall + ", toBet: " + toBet + ", toRaise: " + toRaise);
-//		System.out.println("Folding Prob");
-//		for(int i=1;i<2;i++){
-//			System.out.println(statistics.namelist.get(i));
-//			for(int j=0;j<4;j++){
-//				System.out.println(j==0?"PREFLOP":j==1?"FLOP":j==2?"TURN":"RIVER");
-//				for(int k=0;k<3;k++){
-//					System.out.println(k==0?"DEALER":k==1?"SB":"BB");
-//					for(int l=0;l<3;l++){
-//						for(int m=0;m<3;m++){
-//							System.out.print((double)statistics.fold[i][j][k][l][m]/
-//									statistics.chanceFold[i][j][k][l][m]+"-");
-//						}
-//						System.out.println("");
-//					}
-//				}
-//			}
-//		}
 		
 //		System.out.println("myStack: " + myStack + ", leftStack: " + leftStack + ", rightStack: " + rightStack);
 
@@ -426,11 +424,32 @@ class ProbBot extends GenericBot {
 			winningPr = ExpectedHand.computeSixCardOdds3(c1, c2, leftEH, rightEH, 100);
 		}		
 		
-		final double SMALL_RAISE = 0.2;
-		final double MEDIUM_RAISE = 0.5;
-		final double BIG_RAISE = 1;
-		
-		
+		double smallRaiseRatio = 0.4;
+		double mediumRaiseRatio = 0.5;
+		double bigRaiseRatio = 1;
+		switch (myHand.community.size()) {
+		case 0:
+			smallRaiseRatio = 0.7;
+			mediumRaiseRatio = 1.33;
+			bigRaiseRatio = 2;
+			break;
+		case 3:
+			smallRaiseRatio = 0.4;
+			mediumRaiseRatio = 0.75;
+			bigRaiseRatio = 1.25;
+			break;
+		case 4:
+			smallRaiseRatio = 0.4;
+			mediumRaiseRatio = 0.75;
+			bigRaiseRatio = 1.25;
+			break;
+		case 5:
+			smallRaiseRatio = 0.4;
+			mediumRaiseRatio = 0.75;
+			bigRaiseRatio = 1.25;
+			break;
+		}
+
 		double[] decisionEV = new double[5];
 		double[] raiseValue = new double[5];
 		
@@ -441,17 +460,17 @@ class ProbBot extends GenericBot {
 		decisionEV[1] = !canCall ? (winningPr * potSize) : -stackSize;
 		
 		// raise small
-		double[] temp = EVForRaiseWithReRaise(SMALL_RAISE);
+		double[] temp = EVForRaiseWithReRaise(smallRaiseRatio);
 		decisionEV[2] = temp[0];
 		raiseValue[2] = temp[1];
 
 		// raise medium
-		temp = EVForRaiseWithReRaise(MEDIUM_RAISE);
+		temp = EVForRaiseWithReRaise(mediumRaiseRatio);
 		decisionEV[3] = temp[0];
 		raiseValue[3] = temp[1];
 		
 		// raise big
-		temp = EVForRaiseWithReRaise(BIG_RAISE);
+		temp = EVForRaiseWithReRaise(bigRaiseRatio);
 		decisionEV[4] = temp[0];
 		raiseValue[4] = temp[1];
 		
