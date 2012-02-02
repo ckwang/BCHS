@@ -217,7 +217,7 @@ public class HandHistory {
 			e1.printStackTrace();
 		}
 		String strLine = null;
-		String prefix = "C:\\Documents and Settings\\Administrator.888TIGER-E94494\\орн▒\\pokerbot\\HandHistory\\";
+		String prefix = "C:\\Documents and Settings\\Administrator.888TIGER-E94494\\орн▒\\pokerbot\\HandHistory1\\";
 		
 		try {
 			while ((strLine = br.readLine()) != null) {
