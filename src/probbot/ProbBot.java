@@ -222,7 +222,7 @@ class ProbBot extends GenericBot {
 				reRaise = newpot;
 			}
 			
-			double myFoldingPr = statistics.getRaiseAboveProb(oppName, (position + 2) % 3, oppEH.common, oppActiveCount, 2, winningPrRaised);
+			double myFoldingPr = statistics.getRaiseAboveProb(oppName, oppEH.common, oppActiveCount, seat, 2, winningPrRaised);
 			
 			double EVcall = (winningPr * (newpot - raiseValue) - (1 - winningPr) * raiseValue);
 			double EVreraisecall = ( winningPrRaised * (newpot + reRaise - raiseValue) - (1 - winningPrRaised) * (raiseValue + reRaise));
