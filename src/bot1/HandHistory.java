@@ -260,7 +260,7 @@ public class HandHistory {
 			}
 		}
 		System.out.println(all.statistic.toInitString());
-		/*
+		
 		System.out.println("Raising Prob");
 		for(int i=0;i<all.statistic.players;i++){
 			System.out.println(all.statistic.namelist.get(i));
@@ -270,17 +270,19 @@ public class HandHistory {
 					System.out.println(k==0?"DEALER":k==1?"SB":"BB");
 					for(int l=0;l<3;l++){
 						for(int m=0;m<3;m++){
-							if(all.statistic.chanceRaise[i][j][k][l]==0){
-								System.out.print("N/A ");
-								continue;
+							for(int n=0;n<2;n++){
+								if(all.statistic.chanceRaise[i][j][k][l][n]==0){
+									System.out.print("N/A ");
+									continue;
+								}
+								System.out.print((double)all.statistic.raise[i][j][k][l][m][n]/
+										all.statistic.chanceRaise[i][j][k][l][n]+" ");
 							}
-							System.out.print((double)all.statistic.raise[i][j][k][l][m]/
-									all.statistic.chanceRaise[i][j][k][l]+" ");
 						}
 						System.out.println("");
 					}
 				}
 			}
-		}*/
+		}
 	}
 }

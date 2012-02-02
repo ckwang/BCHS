@@ -105,10 +105,12 @@ public class Statistics {
 		if(time <2)return time;
 		return 2;
 	}
-	public int estimate(double ratio){
-		if(ratio < 0.3)return 0;
-		if(ratio < 1.2)return 1;
-		return 2;
+	public double[] estimate(double ratio){
+		if(ratio < 0.1) return new double[]{0, 0, 0};
+		else if(ratio < 0.5)return new double[]{(ratio-0.1)/0.4, 0, 0};
+		else if(ratio < 1)return new double[]{1-(ratio-0.5)/0.5, (ratio-0.5)/0.5, 0};
+		else if(ratio < 2.5)return new double[]{0,1-(ratio-1)/1.5, (ratio-1)/1.5};
+		else return new double[]{0,0,1};
 	}
 	public double[] estimatecall(double ratio){
 		if(ratio < 0.1)return new double[]{1,0,0};
@@ -149,21 +151,27 @@ public class Statistics {
 	public void raise(String name, int common, int time, int seat, int stack, int toCall, int amount, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
 		int round = timeToInt(time);
-		int ratio = estimate((double)amount/(stack+toCall));
+		double[] ratio = estimate((double)amount/(stack+toCall));
 		int num = aliveToInt(alive);
 		double[] size = estimatecall((double)toCall/stack);
 		for(int i=0;i<3;i++){
 			chanceFold[player][stage][seat][round][i][num]+=size[i];
 		}
 		chanceRaise[player][stage][seat][round][num]++;
-		raise[player][stage][seat][round][ratio][num]++;
+		for(int i=0;i<3;i++){
+			raise[player][stage][seat][round][i][num]+=ratio[i];
+		}
 	}
 	public void bet(String name, int common, int time, int seat, int stack, int amount, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
-		int round = timeToInt(time), ratio = estimate((double)amount/stack);
+		int round = timeToInt(time);
 		int num = aliveToInt(alive);
+		double[] ratio = estimate((double)amount/(stack));
+
 		chanceRaise[player][stage][seat][round][num]++;
-		raise[player][stage][seat][round][ratio][num]++;
+		for(int i=0;i<3;i++){
+			raise[player][stage][seat][round][i][num]+=ratio[i];
+		}
 	}
 	public double getFoldProb(String name, int common, int time, int seat, int stack, int toCall, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
@@ -172,7 +180,7 @@ public class Statistics {
 		double[] size = estimatecall((double)toCall/stack);
 		double ans = 0.0, wei = 0.0;
 		for(int i=0;i<3;i++){
-			if(chanceFold[player][stage][seat][round][i][num]>1.0){
+			if(chanceFold[player][stage][seat][round][i][num]>0.9){
 				ans += size[i]*
 					   fold[player][stage][seat][round][i][num]/chanceFold[player][stage][seat][round][i][num];
 				wei += size[i];
@@ -182,6 +190,39 @@ public class Statistics {
 			return ans/wei;
 		}
 		return 0.2;
+	}
+	public double getRaiseProb(String name, int common, int time, int seat, int alive){
+		int player = nameToInt(name), stage = commonToInt(common);
+		int round = timeToInt(time);
+		int num = aliveToInt(alive);
+		double ans = 0.0, wei = 0.0;
+		if(chanceRaise[player][stage][seat][round][num]>0.9){
+			for(int i=0;i<3;i++){
+				ans += raise[player][stage][seat][round][i][num];
+			}
+			return ans/chanceRaise[player][stage][seat][round][num];
+		}else{
+			return 0.1;
+		}
+	}
+	public double getRaiseAboveProb(String name, int common, int time, int seat, int alive, double threshold){
+		int player = nameToInt(name), stage = commonToInt(common);
+		int round = timeToInt(time);
+		int num = aliveToInt(alive);
+		double [] ratio = estimate(threshold);
+		double ans = 0.0, wei = 1.0;
+		if(chanceRaise[player][stage][seat][round][num]>0.9){
+			for(int i=2;i>=0;i--){
+				ans +=  (wei/2)*
+						raise[player][stage][seat][round][i][num];
+				wei -= ratio[i];
+				ans +=  (wei/2)*
+						raise[player][stage][seat][round][i][num];
+			}
+			return ans/chanceRaise[player][stage][seat][round][num];
+		}else{
+			return 0.1;
+		}
 	}
 	public String toInitString(){
 		StringBuilder sb = new StringBuilder();
