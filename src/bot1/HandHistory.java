@@ -216,9 +216,9 @@ public class HandHistory {
 		
 		try {
 			while ((strLine = br.readLine()) != null) {
-				if(count==0)all.parseFile(prefix + strLine);
+				//if(count==0)all.parseFile(prefix + strLine);
 				//if(count>600)all2.parseFile(prefix + strLine);
-				//else if(count>500) all.parseFile(prefix + strLine);
+				all.parseFile(prefix + strLine);
 				count++;
 				System.out.println(strLine);
 			}
@@ -227,7 +227,7 @@ public class HandHistory {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+		all.statistic.reduce();
 		System.out.println("Folding Prob");
 		for(int i=0;i<all.statistic.players;i++){
 			System.out.println(all.statistic.namelist.get(i));
@@ -254,6 +254,7 @@ public class HandHistory {
 				}
 			}
 		}
+		System.out.println(all.statistic.toInitString());
 		/*
 		System.out.println("Raising Prob");
 		for(int i=0;i<all.statistic.players;i++){
