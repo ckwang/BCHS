@@ -3,6 +3,7 @@ package probbot;
 import bot1.Statistics;
 import bot1.StatisticsInit;
 import util.*;
+import util.Action.Type;
 
 class ProbBot extends GenericBot {
 	
@@ -97,6 +98,7 @@ class ProbBot extends GenericBot {
 	
 	private double updateEHRaise(final ExpectedHand eh, final Action action,
 			final String name, final int position, final int common, final int actionCount, final int numPlayers) {
+		if(action.type == Type.CHECK) return 1.0;
 		final double prob = statistics.getRaiseProb(name, common, actionCount, position, numPlayers);
 		class HP implements HandsProbability {
 			@Override
@@ -200,13 +202,13 @@ class ProbBot extends GenericBot {
 			ExpectedHand oppFuture = oppEH.clone();
 			
 			double oppCallPr = updateEH(oppFuture, new Action(Action.Type.CALL),
-					oppName, (position + 2) % 3, oppEH.common, oppActiveCount, potSize + raiseValue, oppStack - (myStack - raiseValue), 2);
+					oppName, seat, oppEH.common, oppActiveCount, potSize + raiseValue, oppStack - (myStack - raiseValue), 2);
 			
 			double winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), oppFuture);
 			System.out.println("oppCallPr: " + oppCallPr + ", winningPr: " + winningPr + ", raiseValue" + raiseValue);
 			
 			double oppRaisingPr = updateEHRaise(oppFuture, new Action(Action.Type.RAISE),
-					oppName, (position + 2) % 3, oppEH.common, oppActiveCount, 2);
+					oppName, seat, oppEH.common, oppActiveCount, 2);
 			
 			double winningPrRaised = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), oppFuture);
 					
@@ -348,11 +350,25 @@ class ProbBot extends GenericBot {
 					} else {
 						updateEH(leftEH, action, leftName, p, common, activeCount, potSize, toCall, 3);
 					}
+					if(action.type == Type.RAISE){
+						if (hasRightFold) {
+							updateEHRaise(leftEH, action, leftName, p, common, activeCount, 2);
+						} else {
+							updateEHRaise(leftEH, action, leftName, p, common, activeCount, 3);
+						}
+					}
 				} else if (action.actor.compareToIgnoreCase(rightName) == 0) {
 					if (hasLeftFold) {
 						updateEH(rightEH, action, rightName, p, common, activeCount, potSize, toCall, 2);
 					} else {
 						updateEH(rightEH, action, rightName, p, common, activeCount, potSize, toCall, 3);
+					}
+					if(action.type == Type.RAISE){
+						if (hasLeftFold) {
+							updateEHRaise(rightEH, action, rightName, p, common, activeCount, 2);
+						} else {
+							updateEHRaise(rightEH, action, rightName, p, common, activeCount, 3);
+						}
 					}
 				} else {
 //					if (hasLeftFold) {
@@ -425,17 +441,17 @@ class ProbBot extends GenericBot {
 		decisionEV[1] = !canCall ? (winningPr * potSize) : -stackSize;
 		
 		// raise small
-		double[] temp = EVForRaise(SMALL_RAISE);
+		double[] temp = EVForRaiseWithReRaise(SMALL_RAISE);
 		decisionEV[2] = temp[0];
 		raiseValue[2] = temp[1];
 
 		// raise medium
-		temp = EVForRaise(MEDIUM_RAISE);
+		temp = EVForRaiseWithReRaise(MEDIUM_RAISE);
 		decisionEV[3] = temp[0];
 		raiseValue[3] = temp[1];
 		
 		// raise big
-		temp = EVForRaise(BIG_RAISE);
+		temp = EVForRaiseWithReRaise(BIG_RAISE);
 		decisionEV[4] = temp[0];
 		raiseValue[4] = temp[1];
 		
