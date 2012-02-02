@@ -127,7 +127,7 @@ public class Statistics {
 		int round = timeToInt(time); 
 		int num = aliveToInt(alive);
 		double[] size = estimatecall((double)toCall/stack);
-		chanceRaise[player][stage][seat][round][num]++;
+		//chanceRaise[player][stage][seat][round][num]++;
 		for(int i=0;i<3;i++){
 			chanceFold[player][stage][seat][round][i][num]+=size[i];
 			fold[player][stage][seat][round][i][num]+=size[i];
@@ -205,7 +205,10 @@ public class Statistics {
 			return 0.1;
 		}
 	}
-	public double getRaiseAboveProb(String name, int common, int time, int seat, int alive, double threshold){
+	public double getRaiseAboveProb(String name, int common, int time, int seat, int alive, double potodd){
+		double threshold;
+		if(potodd>0.45)threshold = 9;
+		else threshold = potodd/(1-2*potodd);
 		int player = nameToInt(name), stage = commonToInt(common);
 		int round = timeToInt(time);
 		int num = aliveToInt(alive);

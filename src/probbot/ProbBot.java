@@ -95,6 +95,22 @@ class ProbBot extends GenericBot {
 		return eh.multiply(new HP());
 	}
 	
+	private double updateEHRaise(final ExpectedHand eh, final Action action,
+			final String name, final int position, final int common, final int actionCount, final int numPlayers) {
+		final double prob = statistics.getRaiseProb(name, common, actionCount, position, numPlayers);
+		class HP implements HandsProbability {
+			@Override
+			public double getProb(int c1, int c2) {
+				double winningProb = eh.getWinningProbility(c1, c2);
+				double threshold = prob;	
+				double playingProb = 1.0/(1+Math.exp(2*(threshold - winningProb)));
+				return playingProb;
+			}
+		}
+		eh.multiply(new HP());
+		return prob;
+	}
+	
 //	private double updateRaiseEH(final ExpectedHand eh, final Action action,
 //			final String name, final int position, final int common, final int actionCount, final int pot, final int toCall, final int numPlayers) {
 //		class HP implements HandsProbability {
@@ -173,6 +189,91 @@ class ProbBot extends GenericBot {
 		
 		return result;
 	}
+	
+	private double[] EVForRaiseWithReRaise(double raiseRate) {
+		double raiseEV;
+		int raiseValue;
+
+		int myPot = stackSize - myStack;
+		int leftPot = stackSize - leftStack;
+		int rightPot = stackSize - rightStack;
+		
+		toCall = (toCall == -1) ? 0 : toCall;
+		int calledPot = potSize + toCall;
+		raiseValue = (int) (calledPot * raiseRate + toCall);
+		raiseValue = (raiseValue > myStack) ? myStack: raiseValue;
+		raiseValue = (raiseValue < toRaise) ? toRaise : raiseValue;
+		raiseValue = (raiseValue < toBet) ? toBet : raiseValue;
+		
+		if (hasLeftFold || hasRightFold) {
+			ExpectedHand oppEH = hasLeftFold ? rightEH : leftEH;
+			int seat =  hasLeftFold ? (position + 2)%3 : (position + 1) %3;
+			int oppActiveCount = hasLeftFold ? rightActiveCount : leftActiveCount;
+			int oppStack = hasLeftFold ? rightStack : leftStack;
+			String oppName = hasLeftFold ? rightName : leftName;
+			
+			ExpectedHand oppFuture = oppEH.clone();
+			
+			double oppCallPr = updateEH(oppFuture, new Action(Action.Type.CALL),
+					oppName, (position + 2) % 3, oppEH.common, oppActiveCount, potSize + raiseValue, oppStack - (myStack - raiseValue), 2);
+			
+			double winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), oppFuture);
+			System.out.println("oppCallPr: " + oppCallPr + ", winningPr: " + winningPr + ", raiseValue" + raiseValue);
+			
+			double oppRaisingPr = updateEHRaise(oppFuture, new Action(Action.Type.RAISE),
+					oppName, (position + 2) % 3, oppEH.common, oppActiveCount, 2);
+			
+			double winningPrRaised = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), oppFuture);
+					
+			double newpot = potSize + 2*raiseValue - toCall;
+			
+			double reRaise = 0;
+			if(winningPrRaised<0.4){
+				reRaise = newpot * winningPrRaised / (1-2*winningPrRaised) * 0.8;
+				if(reRaise > newpot) reRaise = newpot;
+			}else{
+				reRaise = newpot;
+			}
+			
+			double myFoldingPr = statistics.getRaiseAboveProb(oppName, (position + 2) % 3, oppEH.common, oppActiveCount, 2, winningPrRaised);
+			
+			double EVcall = (winningPr * (newpot - raiseValue) - (1 - winningPr) * raiseValue);
+			double EVreraisecall = ( winningPrRaised * (newpot + reRaise - raiseValue) - (1 - winningPrRaised) * (raiseValue + reRaise));
+			double EVreraise = ( myFoldingPr * ( -raiseValue ) + ( 1 - myFoldingPr ) * EVreraisecall );
+			
+			raiseEV = oppCallPr * ( oppRaisingPr * EVreraise +
+					(1 - oppRaisingPr) * EVcall )
+					+ (1 - oppCallPr) * potSize;
+			
+		} else {
+			ExpectedHand leftFuture = leftEH.clone();
+			ExpectedHand rightOnlyFuture = rightEH.clone();
+			ExpectedHand rightFuture = rightEH.clone();
+						
+			double leftCallPr = updateEH(leftFuture, new Action(Action.Type.CALL),
+					leftName, (position + 1) % 3, leftEH.common, leftActiveCount, potSize + raiseValue, leftStack - (myStack - raiseValue), 3);
+			double rightOnlyCallPr = updateEH(rightOnlyFuture, new Action(Action.Type.CALL),
+					rightName, (position + 2) % 3, rightEH.common, rightActiveCount, potSize + raiseValue, rightStack - (myStack - raiseValue), 2);
+			double rightCallPr = updateEH(rightFuture, new Action(Action.Type.CALL),
+					rightName, (position + 2) % 3, rightEH.common, rightActiveCount, 2*(myPot + raiseValue) + rightPot, rightStack - (myStack - raiseValue), 3);
+			
+			double winningPrLeftOnly = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), leftFuture);
+			double winningPrRightOnly = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), rightOnlyFuture);
+			double winningPrBoth = ExpectedHand.computeSixCardOdds3(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), leftFuture, rightFuture, 100);
+			System.out.println("LeftCallPr: " + leftCallPr + ", rightOnlyCallPr: " + rightOnlyCallPr + ", rightCallPr: " + rightCallPr +
+					",\n\t winningPrLeftOnly: " + winningPrLeftOnly + ", winningPrRightOnly: " + winningPrRightOnly + ", winningPrBoth: " + winningPrBoth + ", raiseValue" + raiseValue);
+
+			raiseEV = leftCallPr * rightCallPr * (winningPrBoth * (3 * (myPot + raiseValue) - raiseValue - leftPot - rightPot) - (1 - winningPrBoth) * raiseValue) +
+			(1 - leftCallPr) * rightOnlyCallPr * (winningPrRightOnly * (2 * (myPot + raiseValue) - raiseValue - leftPot - rightPot) - (1 - winningPrRightOnly) * raiseValue) +
+			leftCallPr * (1 - rightCallPr) * (winningPrLeftOnly * (2 * (myPot + raiseValue) - raiseValue - leftPot - rightPot) - (1 - winningPrLeftOnly) * raiseValue) +
+			(1 - leftCallPr) * (1 - rightOnlyCallPr) * (myPot + leftPot + rightPot);
+		}
+		
+		double[] result = {raiseEV, (double) raiseValue};
+		
+		return result;
+	}
+	
 	
 	@Override
 	public void handleShow(Action a) {
