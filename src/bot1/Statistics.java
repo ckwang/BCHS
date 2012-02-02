@@ -112,9 +112,8 @@ public class Statistics {
 	}
 	public double[] estimatecall(double ratio){
 		if(ratio < 0.1)return new double[]{1,0,0};
-		else if(ratio < 0.4) return new double[]{1-(ratio-0.1)/0.3, (ratio-0.1)/0.3, 0};
-		else if(ratio < 0.6) return new double[]{0, 1, 0};
-		else if(ratio < 1) return new double[]{0, 1-(ratio-0.6)/0.4, (ratio-0.6)/0.4};
+		else if(ratio < 0.35) return new double[]{1-(ratio-0.1)/0.25, (ratio-0.1)/0.25, 0};
+		else if(ratio < 0.7) return new double[]{0, 1-(ratio-0.35)/0.35, (ratio-0.35)/0.35};
 		else return new double[]{0,0,1};
 	}
 	public int aliveToInt(int alive){
