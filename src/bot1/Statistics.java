@@ -74,9 +74,19 @@ public class Statistics {
 			}
 		}
 	}
+	public static boolean trim = true;
 	public int nameToInt(String name1){
 		String name = new String(name1);
-		name = name.substring(0, name.length()-4);
+		if(trim&&name.length()>4){
+			boolean cut = true;
+			for(int i=0;i<4;i++){
+				if(!Character.isDigit(name.charAt(name.length()-i-1))){
+					cut = false;
+					break;
+				}
+			}
+			if(cut)name = name.substring(0, name.length()-4);
+		}
 		if(names.containsKey(name)){
 			return names.get(name);
 		}
@@ -100,10 +110,12 @@ public class Statistics {
 		if(ratio < 1.2)return 1;
 		return 2;
 	}
-	public int estimatecall(double ratio){
-		if(ratio < 0.3)return 0;
-		if(ratio < 0.6)return 1;
-		return 2;
+	public double[] estimatecall(double ratio){
+		if(ratio < 0.1)return new double[]{1,0,0};
+		else if(ratio < 0.4) return new double[]{1-(ratio-0.1)/0.3, (ratio-0.1)/0.3, 0};
+		else if(ratio < 0.6) return new double[]{0, 1, 0};
+		else if(ratio < 1) return new double[]{0, 1-(ratio-0.6)/0.4, (ratio-0.6)/0.4};
+		else return new double[]{0,0,1};
 	}
 	public int aliveToInt(int alive){
 		if(alive==2)return 0;
@@ -111,11 +123,14 @@ public class Statistics {
 	}
 	public void fold(String name, int common, int time, int seat, int stack, int toCall, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
-		int round = timeToInt(time), size = estimatecall((double)toCall/stack);
+		int round = timeToInt(time); 
 		int num = aliveToInt(alive);
-		chanceFold[player][stage][seat][round][size][num]++;
+		double[] size = estimatecall((double)toCall/stack);
 		chanceRaise[player][stage][seat][round][num]++;
-		fold[player][stage][seat][round][size][num]++;
+		for(int i=0;i<3;i++){
+			chanceFold[player][stage][seat][round][i][num]+=size[i];
+			fold[player][stage][seat][round][i][num]+=size[i];
+		}
 	}
 	public void check(String name, int common, int seat, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
@@ -124,17 +139,23 @@ public class Statistics {
 	}
 	public void call(String name, int common, int time, int seat, int stack, int toCall, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
-		int round = timeToInt(time), size = estimatecall((double)toCall/stack);
+		int round = timeToInt(time);
 		int num = aliveToInt(alive);
-		chanceFold[player][stage][seat][round][size][num]++;
+		double[] size = estimatecall((double)toCall/stack);
 		chanceRaise[player][stage][seat][round][num]++;
+		for(int i=0;i<3;i++){
+			chanceFold[player][stage][seat][round][i][num]+=size[i];
+		}
 	}
 	public void raise(String name, int common, int time, int seat, int stack, int toCall, int amount, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
-		int round = timeToInt(time), size = estimatecall((double)toCall/stack);
+		int round = timeToInt(time);
 		int ratio = estimate((double)amount/(stack+toCall));
 		int num = aliveToInt(alive);
-		chanceFold[player][stage][seat][round][size][num]++;
+		double[] size = estimatecall((double)toCall/stack);
+		for(int i=0;i<3;i++){
+			chanceFold[player][stage][seat][round][i][num]+=size[i];
+		}
 		chanceRaise[player][stage][seat][round][num]++;
 		raise[player][stage][seat][round][ratio][num]++;
 	}
@@ -147,10 +168,19 @@ public class Statistics {
 	}
 	public double getFoldProb(String name, int common, int time, int seat, int stack, int toCall, int alive){
 		int player = nameToInt(name), stage = commonToInt(common);
-		int round = timeToInt(time), size = estimatecall((double)toCall/stack);
+		int round = timeToInt(time);
 		int num = aliveToInt(alive);
-		if(chanceFold[player][stage][seat][round][size][num]>0){
-			return (double)fold[player][stage][seat][round][size][num]/chanceFold[player][stage][seat][round][size][num];
+		double[] size = estimatecall((double)toCall/stack);
+		double ans = 0.0, wei = 0.0;
+		for(int i=0;i<3;i++){
+			if(chanceFold[player][stage][seat][round][i][num]>1.0){
+				ans += size[i]*
+					   fold[player][stage][seat][round][i][num]/chanceFold[player][stage][seat][round][i][num];
+				wei += size[i];
+			}
+		}
+		if(wei>1e-6){
+			return ans/wei;
 		}
 		return 0.2;
 	}

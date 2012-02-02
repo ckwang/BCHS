@@ -97,7 +97,8 @@ public class HandHistory {
 					if(max<playerStack[i])max = playerStack[i];
 				}
 				statistic.raise(name, common, time[player], seat[player], stack, max-playerStack[player], raise - max, alive);
-				statistic.raise("all0000", common, time[player], seat[player], stack, max-playerStack[player], raise - max, alive);
+				if(!name.startsWith("OWWW"))
+					statistic.raise("all0000", common, time[player], seat[player], stack, max-playerStack[player], raise - max, alive);
 				time[player]++;
 				playerStack[player]+=raise;
 				stack += raise;
@@ -111,7 +112,8 @@ public class HandHistory {
 				//	System.out.println(name+" "+stack +" "+ max);}
 				
 				statistic.fold(name, common, time[player], seat[player], stack, max-playerStack[player],alive);
-				statistic.fold("all0000", common, time[player], seat[player], stack, max-playerStack[player],alive);
+				if(!name.startsWith("OWWW"))
+					statistic.fold("all0000", common, time[player], seat[player], stack, max-playerStack[player],alive);
 				alive--;
 				folded [player] = true;
 			}
@@ -122,7 +124,8 @@ public class HandHistory {
 					if(max<playerStack[i])max = playerStack[i];
 				}
 				statistic.bet(name, common, time[player], seat[player], stack, raise, alive);
-				statistic.bet("all0000", common, time[player], seat[player], stack, raise, alive);
+				if(!name.startsWith("OWWW"))
+					statistic.bet("all0000", common, time[player], seat[player], stack, raise, alive);
 				
 				time[player]++;
 				stack+=max-playerStack[player];
@@ -136,7 +139,8 @@ public class HandHistory {
 					if(max<playerStack[i])max = playerStack[i];
 				}
 				statistic.call(name, common, time[player], seat[player], stack, max-playerStack[player], alive);
-				statistic.call("all0000", common, time[player], seat[player], stack, max-playerStack[player], alive);
+				if(!name.startsWith("OWWW"))
+					statistic.call("all0000", common, time[player], seat[player], stack, max-playerStack[player], alive);
 				
 				time[player]++;
 				stack+=max-playerStack[player];
@@ -144,7 +148,8 @@ public class HandHistory {
 			}
 			else if (tokens[1].equals("checks")) {
 				statistic.check(name, common, seat[player], alive);
-				statistic.check("all0000", common, seat[player], alive);
+				if(!name.startsWith("OWWW"))
+					statistic.check("all0000", common, seat[player], alive);
 				
 				time[player]++;
 			}
