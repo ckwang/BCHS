@@ -74,7 +74,7 @@ public class HandHistory {
 		
 		String[] tokens;
 		String line, name;
-		int player,raise;
+		int player,raise,alive = 3;
 		while (!(line = br.readLine()).equals("")) {
 			tokens = line.split(" ");
 			name = tokens[0];
@@ -96,8 +96,8 @@ public class HandHistory {
 				for(int i=0;i<3;i++){
 					if(max<playerStack[i])max = playerStack[i];
 				}
-				statistic.raise(name, common, time[player], seat[player], stack, max-playerStack[player], raise - max);
-				statistic.raise("all0000", common, time[player], seat[player], stack, max-playerStack[player], raise - max);
+				statistic.raise(name, common, time[player], seat[player], stack, max-playerStack[player], raise - max, alive);
+				statistic.raise("all0000", common, time[player], seat[player], stack, max-playerStack[player], raise - max, alive);
 				time[player]++;
 				playerStack[player]+=raise;
 				stack += raise;
@@ -107,13 +107,12 @@ public class HandHistory {
 				for(int i=0;i<3;i++){
 					if(max<playerStack[i])max = playerStack[i];
 				}
-				
 				//if(seat[player]==0&&common==0&&time[player]==0){System.out.print("**");
 				//	System.out.println(name+" "+stack +" "+ max);}
 				
-				statistic.fold(name, common, time[player], seat[player], stack, max-playerStack[player]);
-				statistic.fold("all0000", common, time[player], seat[player], stack, max-playerStack[player]);
-				
+				statistic.fold(name, common, time[player], seat[player], stack, max-playerStack[player],alive);
+				statistic.fold("all0000", common, time[player], seat[player], stack, max-playerStack[player],alive);
+				alive--;
 				folded [player] = true;
 			}
 			else if (tokens[1].equals("bets")) {
@@ -122,8 +121,8 @@ public class HandHistory {
 				for(int i=0;i<3;i++){
 					if(max<playerStack[i])max = playerStack[i];
 				}
-				statistic.bet(name, common, time[player], seat[player], stack, raise);
-				statistic.bet("all0000", common, time[player], seat[player], stack, raise);
+				statistic.bet(name, common, time[player], seat[player], stack, raise, alive);
+				statistic.bet("all0000", common, time[player], seat[player], stack, raise, alive);
 				
 				time[player]++;
 				stack+=max-playerStack[player];
@@ -136,16 +135,16 @@ public class HandHistory {
 				for(int i=0;i<3;i++){
 					if(max<playerStack[i])max = playerStack[i];
 				}
-				statistic.call(name, common, time[player], seat[player], stack, max-playerStack[player]);
-				statistic.call("all0000", common, time[player], seat[player], stack, max-playerStack[player]);
+				statistic.call(name, common, time[player], seat[player], stack, max-playerStack[player], alive);
+				statistic.call("all0000", common, time[player], seat[player], stack, max-playerStack[player], alive);
 				
 				time[player]++;
 				stack+=max-playerStack[player];
 				playerStack[player]=max;
 			}
 			else if (tokens[1].equals("checks")) {
-				statistic.check(name, common, seat[player]);
-				statistic.check("all0000", common, seat[player]);
+				statistic.check(name, common, seat[player], alive);
+				statistic.check("all0000", common, seat[player], alive);
 				
 				time[player]++;
 			}
@@ -217,8 +216,9 @@ public class HandHistory {
 		
 		try {
 			while ((strLine = br.readLine()) != null) {
-				if(count>600)all2.parseFile(prefix + strLine);
-				else if(count>500) all.parseFile(prefix + strLine);
+				if(count==0)all.parseFile(prefix + strLine);
+				//if(count>600)all2.parseFile(prefix + strLine);
+				//else if(count>500) all.parseFile(prefix + strLine);
 				count++;
 				System.out.println(strLine);
 			}
@@ -237,14 +237,17 @@ public class HandHistory {
 					System.out.println(k==0?"DEALER":k==1?"SB":"BB");
 					for(int l=0;l<3;l++){
 						for(int m=0;m<3;m++){
+							for(int n=0;n<2;n++){
 							/*if(all2.statistic.chanceFold[i][j][k][l][m]==0){
 								System.out.print("N/A ");
 								continue;
 							}*/
-							System.out.print((double)all2.statistic.fold[i][j][k][l][m]/
-									all2.statistic.chanceFold[i][j][k][l][m]+"-");
-							System.out.print((double)all.statistic.fold[i][j][k][l][m]/
-									all.statistic.chanceFold[i][j][k][l][m]+" ");
+							//System.out.print((double)all2.statistic.fold[i][j][k][l][m]/
+							//		all2.statistic.chanceFold[i][j][k][l][m]+"-");
+								System.out.print((double)all.statistic.fold[i][j][k][l][m][n]/
+										all.statistic.chanceFold[i][j][k][l][m][n]+"~");
+							}
+							System.out.print(" ");
 						}
 						System.out.println("");
 					}
