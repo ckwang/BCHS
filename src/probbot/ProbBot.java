@@ -126,28 +126,32 @@ class ProbBot extends GenericBot {
 		return eh1.multiply(new HP());
 	}
 	
-	private double updateEH3(ExpectedHand eh1, final ExpectedHand eh2, final ExpectedHand eh3, int potSize, final Action action) {
+	private double updateEH3(ExpectedHand eh1, final ExpectedHand eh2, final ExpectedHand eh3, final Action action,
+			final String name, final int position, final int common, final int actionCount, final int pot, final int toCall) {
 		class HP implements HandsProbability {
 			@Override
 			public double getProb(int c1, int c2) {
-				double winningProb = eh2.getWinningProbility(c1, c2) * eh3.getWinningProbility(c1, c2);
-				double threshold = 0.33;	// TODO: define the relation between threshold and parameters
-				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
-				return playingProb;
+//				double winningProb = eh2.getWinningProbility(c1, c2) * eh3.getWinningProbility(c1, c2);
+//				double threshold = 0.33;	// TODO: define the relation between threshold and parameters
+//				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
+//				return playingProb;
+				return statistics.getFoldProb(name, common, actionCount, position, pot, toCall, 3);
 			}
 		}
 		
 		return eh1.multiply(new HP());
 	}
 	
-	private double updateEH2(ExpectedHand eh1, final ExpectedHand eh2, int potSize, Action action) {
+	private double updateEH2(ExpectedHand eh1, final ExpectedHand eh2, Action action,
+			final String name, final int position, final int common, final int actionCount, final int pot, final int toCall) {
 		class HP implements HandsProbability {
 			@Override
 			public double getProb(int c1, int c2) {
-				double winningProb = eh2.getWinningProbility(c1, c2);
-				double threshold = 0.3;	// TODO: define the relation between threshold and parameters
-				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
-				return playingProb;
+//				double winningProb = eh2.getWinningProbility(c1, c2);
+//				double threshold = 0.3;	// TODO: define the relation between threshold and parameters
+//				double playingProb = 1.0/(1+Math.exp(5*(threshold - winningProb)));
+//				return playingProb;
+				return statistics.getFoldProb(name, common, actionCount, position, pot, toCall, 2); 
 			}
 		}
 		
@@ -170,9 +174,10 @@ class ProbBot extends GenericBot {
 		ExpectedHand myEHFuture = myEH.clone();
 		if (hasLeftFold) {
 			ExpectedHand rightFuture = rightEH.clone();
-			updateEH2(myEHFuture, rightEH, calledPot, new Action(Action.Type.RAISE, raiseValue));
+//			updateEH2(myEHFuture, rightEH, calledPot, new Action(Action.Type.RAISE, raiseValue));
 			
-			double rightCallPr = updateEH2(rightFuture, myEHFuture, potSize + raiseValue, new Action(Action.Type.CALL));
+			double rightCallPr = updateEH2(rightFuture, myEHFuture, new Action(Action.Type.CALL),
+					rightName, (position + 2) % 3, rightEH.common, rightActiveCount, potSize + raiseValue, rightStack - (myStack - raiseValue));
 			
 			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), rightFuture);
 			System.out.println("RightCallPr: " + rightCallPr + ", winningPr: " + winningPr + ", raiseValue" + raiseValue);
@@ -181,9 +186,10 @@ class ProbBot extends GenericBot {
 					(1 - winningPr) * raiseValue) + (1 - rightCallPr) * potSize;
 		} else if (hasRightFold) {
 			ExpectedHand leftFuture = leftEH.clone();
-			updateEH2(myEHFuture, leftEH, calledPot, new Action(Action.Type.RAISE, raiseValue));
+//			updateEH2(myEHFuture, leftEH, calledPot, new Action(Action.Type.RAISE, raiseValue));
 			
-			double leftCallPr = updateEH2(leftFuture, myEHFuture, potSize + raiseValue, new Action(Action.Type.CALL));
+			double leftCallPr = updateEH2(leftFuture, myEHFuture, new Action(Action.Type.CALL),
+					leftName, (position + 1) % 3, leftEH.common, leftActiveCount, potSize + raiseValue, leftStack - (myStack - raiseValue));
 			
 			winningPr = ExpectedHand.computeSixCardOdds(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), leftFuture);
 			System.out.println("LeftCallPr: " + leftCallPr + ", winningPr: " + winningPr + ", raiseValue" + raiseValue);
@@ -194,13 +200,13 @@ class ProbBot extends GenericBot {
 			ExpectedHand leftFuture = leftEH.clone();
 			ExpectedHand rightFuture = rightEH.clone();
 						
-			updateEH3(myEHFuture, leftEH, rightEH, potSize + raiseValue,
-					new Action(Action.Type.RAISE, raiseValue));
+//			updateEH3(myEHFuture, leftEH, rightEH, potSize + raiseValue,
+//					new Action(Action.Type.RAISE, raiseValue));
 			
-			double leftCallPr = updateEH3(leftFuture, myEHFuture, rightEH, potSize + raiseValue, 
-					new Action(Action.Type.CALL));
-			double rightCallPr = updateEH3(rightFuture, myEHFuture, leftEH, potSize + raiseValue,
-					new Action(Action.Type.CALL));
+			double leftCallPr = updateEH3(leftFuture, myEHFuture, rightEH, new Action(Action.Type.CALL),
+					leftName, (position + 1) % 3, leftEH.common, leftActiveCount, potSize + raiseValue, leftStack - (myStack - raiseValue));
+			double rightCallPr = updateEH3(rightFuture, myEHFuture, leftEH, new Action(Action.Type.CALL),
+					rightName, (position + 2) % 3, rightEH.common, rightActiveCount, potSize + raiseValue, rightStack - (myStack - raiseValue));
 			
 			winningPr = ExpectedHand.computeSixCardOdds3(myHand.hole[0].toLibValue(), myHand.hole[1].toLibValue(), leftFuture, rightFuture, 100);
 			System.out.println("LeftCallPr: " + leftCallPr + ", winningPr: " + winningPr + ", raiseValue" + raiseValue);
@@ -269,6 +275,7 @@ class ProbBot extends GenericBot {
 			int p = 0;
 			int toCall = 0;
 			int potSize = 3 * stackSize - (leftStack + rightStack + myStack);
+			int numPlayers = (hasLeftFold || hasRightFold) ? 2 : 3;
 			
 			if (action.actor.compareToIgnoreCase(leftName) == 0) {
 				activeCount = leftActiveCount;
@@ -290,43 +297,43 @@ class ProbBot extends GenericBot {
 			if ((action.actor.compareToIgnoreCase(leftName) == 0) || (action.actor.compareToIgnoreCase(rightName) == 0)) {
 				switch (action.type) {
 				case BET:
-					statistics.bet(action.actor, common, activeCount, p, potSize, action.amount);
+					statistics.bet(action.actor, common, activeCount, p, potSize, action.amount, numPlayers);
 					break;
 				case CALL:
-					statistics.call(action.actor, common, activeCount, p, potSize, toCall);
+					statistics.call(action.actor, common, activeCount, p, potSize, toCall, numPlayers);
 					break;
 				case CHECK:
-					statistics.check(action.actor, common, p);
+					statistics.check(action.actor, common, p, numPlayers);
 					break;
 				case FOLD:
-					statistics.fold(action.actor, common, activeCount, p, potSize, toCall);
+					statistics.fold(action.actor, common, activeCount, p, potSize, toCall, numPlayers);
 					break;
 				case RAISE:
-					statistics.raise(action.actor, common, activeCount, p, potSize, toCall, action.amount);
+					statistics.raise(action.actor, common, activeCount, p, potSize, toCall, action.amount, numPlayers);
 				}
 			}
 			
 			if (hasFlop) {
 				if (action.actor.compareToIgnoreCase(leftName) == 0) {
 					if (hasRightFold) {
-						updateEH2(leftEH, myEH, potSize, action);
+						updateEH2(leftEH, myEH, action, leftName, p, common, activeCount, potSize, toCall);
 					} else {
-						updateEH3(leftEH, myEH, rightEH, potSize, action);
+						updateEH3(leftEH, myEH, rightEH, action, leftName, p, common, activeCount, potSize, toCall);
 					}
 				} else if (action.actor.compareToIgnoreCase(rightName) == 0) {
 					if (hasLeftFold) {
-						updateEH2(rightEH, myEH, potSize, action);
+						updateEH2(rightEH, myEH, action, rightName, p, common, activeCount, potSize, toCall);
 					} else {
-						updateEH3(rightEH, myEH, leftEH, potSize, action);
+						updateEH3(rightEH, myEH, leftEH, action, rightName, p, common, activeCount, potSize, toCall);
 					}
 				} else {
-					if (hasLeftFold) {
-						updateEH2(myEH, rightEH, potSize, action);
-					} else if (hasRightFold) {
-						updateEH2(myEH, leftEH, potSize, action);
-					} else {
-						updateEH3(myEH, leftEH, rightEH, potSize, action);
-					}
+//					if (hasLeftFold) {
+//						updateEH2(myEH, rightEH, action);
+//					} else if (hasRightFold) {
+//						updateEH2(myEH, leftEH, action);
+//					} else {
+//						updateEH3(myEH, leftEH, rightEH, action);
+//					}
 				}
 			}
 			
@@ -391,23 +398,23 @@ class ProbBot extends GenericBot {
 	public String flop_computation() {		
 		System.out.println("***");
 		System.out.println("toCall: " + toCall + ", toBet: " + toBet + ", toRaise: " + toRaise);
-		System.out.println("Folding Prob");
-		for(int i=1;i<2;i++){
-			System.out.println(statistics.namelist.get(i));
-			for(int j=0;j<4;j++){
-				System.out.println(j==0?"PREFLOP":j==1?"FLOP":j==2?"TURN":"RIVER");
-				for(int k=0;k<3;k++){
-					System.out.println(k==0?"DEALER":k==1?"SB":"BB");
-					for(int l=0;l<3;l++){
-						for(int m=0;m<3;m++){
-							System.out.print((double)statistics.fold[i][j][k][l][m]/
-									statistics.chanceFold[i][j][k][l][m]+"-");
-						}
-						System.out.println("");
-					}
-				}
-			}
-		}
+//		System.out.println("Folding Prob");
+//		for(int i=1;i<2;i++){
+//			System.out.println(statistics.namelist.get(i));
+//			for(int j=0;j<4;j++){
+//				System.out.println(j==0?"PREFLOP":j==1?"FLOP":j==2?"TURN":"RIVER");
+//				for(int k=0;k<3;k++){
+//					System.out.println(k==0?"DEALER":k==1?"SB":"BB");
+//					for(int l=0;l<3;l++){
+//						for(int m=0;m<3;m++){
+//							System.out.print((double)statistics.fold[i][j][k][l][m]/
+//									statistics.chanceFold[i][j][k][l][m]+"-");
+//						}
+//						System.out.println("");
+//					}
+//				}
+//			}
+//		}
 		
 //		System.out.println("myStack: " + myStack + ", leftStack: " + leftStack + ", rightStack: " + rightStack);
 
