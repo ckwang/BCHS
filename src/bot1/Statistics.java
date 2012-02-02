@@ -254,40 +254,41 @@ public class Statistics {
 				for(int l=0;l<3;l++){					
 					for(int m=0;m<3;m++){
 						for(int n=0;n<2;n++){
-							if(chanceFold[0][j][k][l][m][n]>50){
-								fold[0][j][k][l][m][n]=(fold[0][j][k][l][m][n]/chanceFold[0][j][k][l][m][n])*50;
-								chanceFold[0][j][k][l][m][n] = 50;
-							}
-							if(chanceFold[0][j][k][l][m][n]<5){
-								if(n==1){
+							double norm = Math.sqrt(chanceFold[0][j][k][l][m][n]);
+							if(norm > 0.9){
+								if(norm < 3) norm = 3;
+								fold[0][j][k][l][m][n]=(fold[0][j][k][l][m][n]/chanceFold[0][j][k][l][m][n])*norm;
+								chanceFold[0][j][k][l][m][n] = norm;
+							}else{
+								if(n == 1){
 									chanceFold[0][j][k][l][m][n] = chanceFold[0][j][k][l][m][0];
 									fold[0][j][k][l][m][n] = fold[0][j][k][l][m][0];
 								}else{
-									chanceFold[0][j][k][l][m][n] = 5;
-									fold[0][j][k][l][m][n] = 1.5;
-								}
-							}
-							if(chanceRaise[0][j][k][l][n]>50){
-								raise[0][j][k][l][m][n]=(raise[0][j][k][l][m][n]/chanceRaise[0][j][k][l][n])*50;	
-							}	
-							if(chanceRaise[0][j][k][l][n]<5){
-								if(n==1){
-									raise[0][j][k][l][m][n] = raise[0][j][k][l][m][0];
-								}else{
-									raise[0][j][k][l][m][n] = 0;
+									chanceFold[0][j][k][l][m][n] = 1;
+									fold[0][j][k][l][m][n] = 0.3;
 								}
 							}
 						}
 					}
 					for(int n=0;n<2;n++){
-						if(chanceRaise[0][j][k][l][n]>50){
-							chanceRaise[0][j][k][l][n]=50;
-						}
-						if(chanceRaise[0][j][k][l][n]<5){
+						double norm = Math.sqrt(chanceRaise[0][j][k][l][n]);
+						if(norm > 0.9){
+							if(norm<3)norm = 3;
+							for(int m=0;m<3;m++){
+								raise[0][j][k][l][m][n] = (raise[0][j][k][l][m][n]/chanceRaise[0][j][k][l][n]) * norm; 
+							}
+							chanceRaise[0][j][k][l][n] = norm;
+						}else{
 							if(n==1){
+								for(int m=0;m<3;m++){
+									raise[0][j][k][l][m][n] = raise[0][j][k][l][m][0]; 
+								}
 								chanceRaise[0][j][k][l][n] = chanceRaise[0][j][k][l][0];
 							}else{
-								chanceRaise[0][j][k][l][n] = 5;
+								for(int m=0;m<3;m++){
+									raise[0][j][k][l][m][n] = 0.03; 
+								}
+								chanceRaise[0][j][k][l][n] = 1;
 							}
 						}
 					}

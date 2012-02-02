@@ -249,8 +249,9 @@ public class HandHistory {
 							}*/
 							//System.out.print((double)all2.statistic.fold[i][j][k][l][m]/
 							//		all2.statistic.chanceFold[i][j][k][l][m]+"-");
-								System.out.print((double)all.statistic.fold[i][j][k][l][m][n]/
-										all.statistic.chanceFold[i][j][k][l][m][n]+"~");
+								/*System.out.print((double)all.statistic.fold[i][j][k][l][m][n]/
+										all.statistic.chanceFold[i][j][k][l][m][n]+"~");*/
+								System.out.print(all.statistic.chanceFold[i][j][k][l][m][n]+"~");
 							}
 							System.out.print(" ");
 						}
@@ -261,7 +262,7 @@ public class HandHistory {
 		}
 		System.out.println(all.statistic.toInitString());
 		
-		System.out.println("Raising Prob");
+		/*System.out.println("Raising Prob");
 		for(int i=0;i<all.statistic.players;i++){
 			System.out.println(all.statistic.namelist.get(i));
 			for(int j=0;j<4;j++){
@@ -283,6 +284,6 @@ public class HandHistory {
 					}
 				}
 			}
-		}
+		}*/
 	}
 }
