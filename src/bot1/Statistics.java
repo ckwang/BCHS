@@ -205,7 +205,10 @@ public class Statistics {
 			return 0.1;
 		}
 	}
-	public double getRaiseAboveProb(String name, int common, int time, int seat, int alive, double threshold){
+	public double getRaiseAboveProb(String name, int common, int time, int seat, int alive, double potodd){
+		double threshold;
+		if(potodd>0.45)threshold = 9;
+		else threshold = potodd/(1-2*potodd);
 		int player = nameToInt(name), stage = commonToInt(common);
 		int round = timeToInt(time);
 		int num = aliveToInt(alive);
