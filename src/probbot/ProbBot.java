@@ -73,9 +73,9 @@ class ProbBot extends GenericBot {
 		leftEH = new ExpectedHand();
 		rightEH = new ExpectedHand();
 		
-		priorEH3(myEH);
-		priorEH3(leftEH);
-		priorEH3(rightEH);
+//		priorEH3(myEH);
+//		priorEH3(leftEH);
+//		priorEH3(rightEH);
 	}
 
 	public void processStatistics() {}
@@ -335,55 +335,56 @@ class ProbBot extends GenericBot {
 	
 	@Override
 	public String preflop_computation() {
-		System.out.println("***");
-		System.out.println("toCall: " + toCall + ", toBet: " + toBet + ", toRaise: " + toRaise);
-
-		Card[] holeCards = myHand.hole;
-		double winningProb;
-		
-		switch (position) {
-		case 0:	// dealer
-			winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
-			if (winningProb >= 0.33) {
-				return "CALL";
-			} else {
-				return "FOLD";
-			}
-		case 1:	// sb
-			if (hasRightFold) {
-				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.5) {
-					return "CALL"; 
-				} else {
-					return "FOLD";
-				}
-			} else {
-				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.33) {
-					return "CALL";
-				} else {
-					return "FOLD";
-				}
-			}
-		case 2:	// bb
-			if (hasLeftFold || hasRightFold) {
-				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.5) {
-					return "CALL"; 
-				} else {
-					return "FOLD";
-				}
-			} else {
-				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
-				if (winningProb >= 0.33) {
-					return "CALL";
-				} else {
-					return "FOLD";
-				}
-			}
-		}
-		
-		return null;
+		return flop_computation();
+//		System.out.println("***");
+//		System.out.println("toCall: " + toCall + ", toBet: " + toBet + ", toRaise: " + toRaise);
+//
+//		Card[] holeCards = myHand.hole;
+//		double winningProb;
+//		
+//		switch (position) {
+//		case 0:	// dealer
+//			winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+//			if (winningProb >= 0.33) {
+//				return "CALL";
+//			} else {
+//				return "FOLD";
+//			}
+//		case 1:	// sb
+//			if (hasRightFold) {
+//				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.5) {
+//					return "CALL"; 
+//				} else {
+//					return "FOLD";
+//				}
+//			} else {
+//				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.33) {
+//					return "CALL";
+//				} else {
+//					return "FOLD";
+//				}
+//			}
+//		case 2:	// bb
+//			if (hasLeftFold || hasRightFold) {
+//				winningProb = PokerTable.preflopWinningProb2(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.5) {
+//					return "CALL"; 
+//				} else {
+//					return "FOLD";
+//				}
+//			} else {
+//				winningProb = PokerTable.preflopWinningProb3(holeCards[0], holeCards[1]);
+//				if (winningProb >= 0.33) {
+//					return "CALL";
+//				} else {
+//					return "FOLD";
+//				}
+//			}
+//		}
+//		
+//		return null;
 	}
 
 	@Override

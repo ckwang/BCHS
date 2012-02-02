@@ -113,6 +113,24 @@ public abstract class GenericBot {
 			System.out.println("Legal action:" + legalActions.toString());
 			response = decide(); //compute next action
 		} else if (tokens[0].compareToIgnoreCase("HANDOVER") == 0) {
+			
+			int numLastActions = Integer.parseInt(tokens[4]);
+			int numBoardCards = Integer.parseInt(tokens[5 + (numLastActions > 0 ? 1 : 0)]);
+			if (numBoardCards > 0) {
+				String[] boardCardsTokens = tokens[6 + (numLastActions > 0 ? 1 : 0)].split(",");
+				for (int i = myHand.community.size(); i < numBoardCards; i++) {
+					myHand.addCards(new Card(boardCardsTokens[i]));
+				}
+				System.out.println("Community: " + myHand.community);
+			}
+			
+			if (numLastActions > 0) {
+				String[] lastActionsTokens = tokens[5].split(",");
+				for (int i = 0; i < numLastActions; i++) {
+					parsePerformedAction(lastActionsTokens[i]);
+				}
+			}
+			
 			processStatistics();
 			// do nothing
 		} else {
@@ -215,17 +233,16 @@ public abstract class GenericBot {
 			int amount = Integer.parseInt(tokens[2]);
 			if (actor.equals(leftName)) {
 				leftStack += amount;
-			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 				rightStack += amount;
+			} else if (actor.compareToIgnoreCase(rightName) == 0) {
 			} else {
 				myStack += amount;
 			}
 			result = new Action(Action.Type.REFUND, actor, amount);
-		} else if (tokens[0].compareToIgnoreCase("SHOW") == 0) {
+		} else if (tokens[0].compareToIgnoreCase("SHOWS") == 0) {
 			String actor = tokens[1];
-			String[] hand = tokens[2].split(" ");
-			Card c1 = new Card(hand[0]);
-			Card c2 = new Card(hand[1]);
+			Card c1 = new Card(tokens[2]);
+			Card c2 = new Card(tokens[3]);
 			int pairValue = Card.pairToValue(c1.toLibValue(), c2.toLibValue());
 			result = new Action(Action.Type.SHOW, actor, pairValue);
 			handleShow(result);
@@ -246,6 +263,7 @@ public abstract class GenericBot {
 			}
 		} else {
 			System.out.println("Action parse error.");
+			System.out.println(tokens[0]);
 		}
 		if (result.actor != null) {
 			if (result.actor.compareToIgnoreCase(leftName) == 0)
