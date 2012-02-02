@@ -127,7 +127,7 @@ public class Statistics {
 		int round = timeToInt(time); 
 		int num = aliveToInt(alive);
 		double[] size = estimatecall((double)toCall/stack);
-		chanceRaise[player][stage][seat][round][num]++;
+		//chanceRaise[player][stage][seat][round][num]++;
 		for(int i=0;i<3;i++){
 			chanceFold[player][stage][seat][round][i][num]+=size[i];
 			fold[player][stage][seat][round][i][num]+=size[i];
