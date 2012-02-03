@@ -301,4 +301,54 @@ public class Statistics {
 			}
 		}
 	}
+	public void reduceBetweenGame(){
+		for(int j=0;j<4;j++){
+			for(int k=0;k<3;k++){
+				for(int l=0;l<3;l++){					
+					for(int m=0;m<3;m++){
+						for(int n=0;n<2;n++){
+							double norm = chanceFold[0][j][k][l][m][n]/2;
+							if(norm > 15) norm = 15;
+							if(norm > 0.1){
+								if(norm < 3) norm = 3;
+								fold[0][j][k][l][m][n]=(fold[0][j][k][l][m][n]/chanceFold[0][j][k][l][m][n])*norm;
+								chanceFold[0][j][k][l][m][n] = norm;
+							}else{
+								if(n == 1){
+									chanceFold[0][j][k][l][m][n] = chanceFold[0][j][k][l][m][0];
+									fold[0][j][k][l][m][n] = fold[0][j][k][l][m][0];
+								}else{
+									chanceFold[0][j][k][l][m][n] = 1;
+									fold[0][j][k][l][m][n] = 0.3;
+								}
+							}
+						}
+					}
+					for(int n=0;n<2;n++){
+						double norm = chanceRaise[0][j][k][l][n]/2;
+						if(norm > 15) norm = 15;
+						if(norm > 0.1){
+							if(norm < 3)norm = 3;
+							for(int m=0;m<3;m++){
+								raise[0][j][k][l][m][n] = (raise[0][j][k][l][m][n]/chanceRaise[0][j][k][l][n]) * norm; 
+							}
+							chanceRaise[0][j][k][l][n] = norm;
+						}else{
+							if(n==1){
+								for(int m=0;m<3;m++){
+									raise[0][j][k][l][m][n] = raise[0][j][k][l][m][0]; 
+								}
+								chanceRaise[0][j][k][l][n] = chanceRaise[0][j][k][l][0];
+							}else{
+								for(int m=0;m<3;m++){
+									raise[0][j][k][l][m][n] = 0.03; 
+								}
+								chanceRaise[0][j][k][l][n] = 1;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
