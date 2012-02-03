@@ -258,7 +258,7 @@ public class Statistics {
 					for(int m=0;m<3;m++){
 						for(int n=0;n<2;n++){
 							double norm = Math.sqrt(chanceFold[0][j][k][l][m][n])/2;
-							if(norm > 50) norm = 50;
+							if(norm > 10) norm = 10;
 							if(norm > 0.9){
 								if(norm < 3) norm = 3;
 								fold[0][j][k][l][m][n]=(fold[0][j][k][l][m][n]/chanceFold[0][j][k][l][m][n])*norm;
@@ -276,7 +276,7 @@ public class Statistics {
 					}
 					for(int n=0;n<2;n++){
 						double norm = Math.sqrt(chanceRaise[0][j][k][l][n])/2;
-						if(norm > 50) norm = 50;
+						if(norm > 10) norm = 10;
 						if(norm > 0.9){
 							if(norm<3)norm = 3;
 							for(int m=0;m<3;m++){

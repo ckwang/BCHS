@@ -249,9 +249,9 @@ public class HandHistory {
 							}*/
 							//System.out.print((double)all2.statistic.fold[i][j][k][l][m]/
 							//		all2.statistic.chanceFold[i][j][k][l][m]+"-");
-								/*System.out.print((double)all.statistic.fold[i][j][k][l][m][n]/
-										all.statistic.chanceFold[i][j][k][l][m][n]+"~");*/
-								System.out.print(all.statistic.chanceFold[i][j][k][l][m][n]+"~");
+								System.out.print((double)all.statistic.fold[i][j][k][l][m][n]/
+										all.statistic.chanceFold[i][j][k][l][m][n]+"~");
+								//System.out.print(all.statistic.chanceFold[i][j][k][l][m][n]+"~");
 							}
 							System.out.print(" ");
 						}
