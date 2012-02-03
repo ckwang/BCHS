@@ -358,7 +358,7 @@ class ProbBot extends GenericBot {
 				}
 			}
 			
-			if (hasFlop && (action.type != Action.Type.CHECK)) {
+			if (action.type != Action.Type.CHECK) {
 				if (action.actor.compareToIgnoreCase(leftName) == 0) {
 					if (hasRightFold) {
 						updateEH(leftEH, action, leftName, p, common, activeCount, potSize, toCall, 2);
@@ -454,7 +454,31 @@ class ProbBot extends GenericBot {
 		double[] raiseValue = new double[5];
 		
 		// call
-		decisionEV[0] = canCall ? (winningPr * (potSize + toCall) - toCall) : -stackSize;
+		if (canCall) {
+			if (!hasLeftFold && !hasRightFold) {
+				if (leftStack == rightStack) {	// last call
+					decisionEV[0] = canCall ? (winningPr * (potSize + toCall) - toCall) : -stackSize;
+				} else {	// first call
+					int rightPot = stackSize - rightStack;
+					
+					ExpectedHand leftFuture = leftEH.clone();
+					
+					double leftCallPr = updateEH(leftFuture, new Action(Action.Type.CALL),
+							leftName, (position + 1) % 3, leftEH.common, leftActiveCount, potSize + toCall, leftStack - (myStack - toCall), 3);
+					
+					double callWinningPr = ExpectedHand.computeSixCardOdds3(c1, c2, leftFuture, rightEH, 100);
+					double foldWinningPr = ExpectedHand.computeSixCardOdds(c1, c2, rightEH);
+					System.out.println("leftCallPr: " + leftCallPr + ", winningPr: " + callWinningPr + ", toCall" + toCall);
+					
+					decisionEV[0] = leftCallPr * (callWinningPr * (3 * rightPot) - toCall) +
+					(1 - leftCallPr) * (foldWinningPr * (potSize + toCall) - toCall);
+				}
+			} else {
+				decisionEV[0] = canCall ? (winningPr * (potSize + toCall) - toCall) : -stackSize;
+			}
+		} else {
+			decisionEV[0] = -stackSize;
+		}
 		
 		// check
 		decisionEV[1] = !canCall ? (winningPr * potSize) : -stackSize;
